@@ -1,0 +1,11 @@
+{
+    "include": ["./src/*.ts", "./server/*.ts"],
+    "compilerOptions": {
+        "strictNullChecks": true,
+        "noUncheckedIndexedAccess": true,
+        "target": "ES2021",
+        "module": "CommonJS",
+        "esModuleInterop": true,
+        "outDir": "dist/"
+    }
+}
