@@ -1,6 +1,6 @@
 import express from "express";
 import path from "path";
-import { allText } from "./utils";
+import { allText } from "./webScrape";
 import fs from "fs";
 const PORT = 3000;
 

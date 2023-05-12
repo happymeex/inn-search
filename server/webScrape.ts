@@ -93,9 +93,7 @@ async function chapterText(url: string): Promise<string> {
         const rawHTML = await res.text();
         const match = rawHTML.match(regex);
         if (!match || !match[1]) {
-            console.log(rawHTML);
-            console.log("error getting content div for chapter", url);
-            throw new Error();
+            throw new Error(`error getting content div for chapter ${url}`);
         }
         return extractText(match[1]);
     } catch (err) {
