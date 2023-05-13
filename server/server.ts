@@ -1,7 +1,8 @@
 import express from "express";
 import path from "path";
-import { allText } from "./webScrape";
+import { search } from "./search";
 import fs from "fs";
+
 const PORT = 3000;
 
 const app = express();
@@ -17,4 +18,17 @@ app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
 });
 
-void allText(10, 60 * 10);
+//void allText(10, 60 * 10);
+
+async function f() {
+    const res = await search("youtube", {
+        caseSensitive: false,
+    });
+    for (const chapter of res) {
+        const [name, data] = chapter;
+        console.log(name, "score:", data.score);
+        console.log("excerpts:", data.excerpts.slice(0, 5));
+    }
+}
+
+void f();
