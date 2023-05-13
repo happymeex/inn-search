@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { search } from "./search";
-import fs from "fs";
+import { writeAll, writeUpdate } from "./webScrape";
 
 const PORT = 3000;
 
@@ -18,8 +18,6 @@ app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
 });
 
-//void allText(10, 60 * 10);
-
 async function f() {
     const res = await search("youtube", {
         caseSensitive: false,
@@ -32,3 +30,7 @@ async function f() {
 }
 
 void f();
+
+//void writeAll(15, 5);
+
+//writeUpdate();

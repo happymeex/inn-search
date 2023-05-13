@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-const DATA_PATH = path.resolve(__dirname, "..", "..", "data");
+export const DATA_PATH = path.resolve(__dirname, "..", "..", "data");
 /**
  * Promise to an array whose elements take the form [chapterName, text],
  * in the correct chapter order.
