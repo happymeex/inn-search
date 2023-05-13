@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "server": "node dist/server/server.js",
-        "compile": "npx tsc && cp index.html dist/index.html"
+        "compile": "npx tsc && cp index.html dist/index.html && cp index.js dist/index.js"
     },
     "keywords": [],
     "author": "",
