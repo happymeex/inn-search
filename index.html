@@ -3,12 +3,37 @@
 <html lang="en">
     <head>
         <title>TWI Searcher</title>
+        <script src="src/index.js" type="module"></script>
     </head>
     <body>
         <header>
             <h1>Search The Wandering Inn!</h1>
         </header>
-        <main>Ok</main>
-        <script src="index.js"></script>
+        <main>
+            Ok
+            <article>
+                <form id="search-form">
+                    <input type="text" id="search-input" name="input" />
+                    <button type="submit">Search</button>
+                    Case sensitivity:
+                    <label>
+                        <input
+                            type="radio"
+                            value="true"
+                            name="caseSensitivity"
+                        />
+                        On
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            value="false"
+                            name="caseSensitivity"
+                        />
+                        Off
+                    </label>
+                </form>
+            </article>
+        </main>
     </body>
 </html>
