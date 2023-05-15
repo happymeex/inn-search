@@ -2,6 +2,7 @@ import assert from "assert";
 import fs from "fs";
 import path from "path";
 import { DATA_PATH, ALL_TEXT_PROMISE, resetText } from "./preprocessing";
+import { ChapterName, URL, Text } from "./types";
 
 const TABLE_OF_CONTENTS = "https://wanderinginn.com/table-of-contents/";
 const URL_BASE = "https://wanderinginn.com";
@@ -11,34 +12,39 @@ const ignore = ["/vol-1-archive", "/contacts/"];
  * Fetches and writes all chapters to files of the form data/i.txt
  *
  * @param rateLimit maximum number of chapters to handle at a time
- * @param pauseTime seconds to pause between batches of requests
+ * @param pauseTime minutes to pause between batches of requests
  */
 export async function writeAll(
     rateLimit = 10000,
-    pauseTime = 0
+    pauseTime = 0,
+    start = 0
 ): Promise<void> {
     const urls = await chapterToURL();
-    const chapterNames: string[] = [];
-    const promises: Promise<string>[] = [];
+    const chapterNames: ChapterName[] = [];
+    const chapterURLs: URL[] = [];
+    const promises: Promise<Text>[] = [];
 
     /** can't do this all concurrently; run into 429 too many requests */
     for (const [i, [chapterName, url]] of urls.entries()) {
+        if (i < start) continue;
         console.log("starting chapter", i);
         chapterNames.push(chapterName);
+        chapterURLs.push(url);
         promises.push(fetchChapter(url));
         if ((i + 1) % rateLimit === 0 || i + 1 === urls.length) {
             await writeToFile(
                 rateLimit * Math.floor(i / rateLimit),
                 promises,
+                chapterURLs,
                 chapterNames
             );
             console.log("finished batch, waiting now...");
-            await wait(pauseTime * 1000);
+            await wait(pauseTime * 60 * 1000);
             chapterNames.length = 0;
+            chapterURLs.length = 0;
             promises.length = 0;
         }
     }
-    resetText();
 }
 
 /**
@@ -56,12 +62,13 @@ export async function writeUpdate(): Promise<void> {
             console.log("patching missing chapter:", chapterName);
             const url = urls.get(chapterName);
             if (url === undefined) console.log("unknown url");
-            else await writeToFile(i, [fetchChapter(url)], [chapterName]);
+            else
+                await writeToFile(i, [fetchChapter(url)], [url], [chapterName]);
         }
     }
     // write new chapter
     const chapterNames = new Set(
-        currText.map(([chapterName, text]) => chapterName)
+        currText.map(([chapterName, url, text]) => chapterName)
     );
     let i = 0;
     for (const [newChapterName, url] of urls.entries()) {
@@ -70,6 +77,7 @@ export async function writeUpdate(): Promise<void> {
             await writeToFile(
                 currText.length + i,
                 [fetchChapter(url)],
+                [url],
                 [newChapterName]
             );
             i++;
@@ -88,8 +96,9 @@ export async function writeUpdate(): Promise<void> {
  */
 async function writeToFile(
     startIndex: number,
-    chapterTexts: Promise<string>[],
-    chapterNames: string[]
+    chapterTexts: Promise<Text>[],
+    chapterURLs: URL[],
+    chapterNames: ChapterName[]
 ): Promise<void[]> {
     console.log("writing batch to file starting at", startIndex);
     return (
@@ -98,8 +107,9 @@ async function writeToFile(
             .then((res) => {
                 return res.map((text, i) => {
                     const name = chapterNames[i];
-                    assert(name);
-                    return name + "\n" + text;
+                    const url = chapterURLs[i];
+                    assert(name && url);
+                    return name + "\n" + url + "\n" + text;
                 });
             })
             .then((res) =>
@@ -121,7 +131,7 @@ async function writeToFile(
 /**
  * @returns a promise to a list of pairs of the form [chapterName, URL]
  */
-async function chapterToURL(): Promise<Array<[string, string]>> {
+async function chapterToURL(): Promise<Array<[ChapterName, URL]>> {
     const regex = /<a[\s]+href="(\/[-\w\/]+)">([\w\-\u2013\(\). ]+)<\/a>/g;
     const res = await fetch(TABLE_OF_CONTENTS);
     const rawHTML = await res.text();
@@ -141,7 +151,7 @@ async function chapterToURL(): Promise<Array<[string, string]>> {
  * @returns a promise for the text of the corresponding chapter as a single string,
  *      paragraphs separated by double newlines
  */
-async function fetchChapter(url: string): Promise<string> {
+async function fetchChapter(url: URL): Promise<Text> {
     console.log("looking at url:", url);
     const regex = new RegExp(
         /<div[\s]+class[\s]*=[\s]*"entry-content">(.*?)<\/div>/,
@@ -165,7 +175,7 @@ async function fetchChapter(url: string): Promise<string> {
  * @param rawHTML raw HTML between the <div class="entry-content"> of a chapter's source HTML
  * @returns the text of the chapter as a single string with paragraps separated by double newlines
  */
-function extractText(rawHTML: string): string {
+function extractText(rawHTML: string): Text {
     const regex = new RegExp(/<p>(.*?)<\/p>/, "sg");
     const m = [...rawHTML.matchAll(regex)];
     return m

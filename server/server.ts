@@ -5,6 +5,7 @@ import { writeAll, writeUpdate } from "./webScrape";
 import { StatusCodes } from "http-status-codes";
 import { SearchParams } from "./score";
 import { Request, Response } from "express";
+import { resetText } from "./preprocessing";
 
 const PORT = 3000;
 
@@ -25,19 +26,12 @@ async function searchHandler(
 ) {
     const query = req.query.query;
     const caseSensitive = req.query.caseSensitive === "true";
-    const data = (
-        await search(query.split(","), {
-            caseSensitive: caseSensitive,
-        })
-    ).filter((ch) => {
-        ch[1].score > 0;
+    const allData = await search(query.split(","), {
+        caseSensitive: caseSensitive,
     });
-    data.sort((ch1, ch2) => ch2[1].score - ch1[1].score);
-    res.status(StatusCodes.OK).send(
-        data.map(([name, { score, excerpts }]) => {
-            return { name, excerpts };
-        })
-    );
+    const data = allData.filter((ch) => ch.score > 0);
+    // data.sort((ch1, ch2) => ch2[1].score - ch1[1].score);
+    res.status(StatusCodes.OK).send(data);
 }
 
 /**
@@ -50,4 +44,5 @@ app.use(express.static(staticPath));
 
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
+    //resetText(true);
 });

@@ -1,5 +1,6 @@
 import { SearchParams, scoreText } from "./score";
 import { ALL_TEXT_PROMISE } from "./preprocessing";
+import { ChapterName, URL, ChapterSearchData } from "./types";
 
 /**
  * Search all chapters currently stored in the file system.
@@ -12,7 +13,7 @@ import { ALL_TEXT_PROMISE } from "./preprocessing";
 export async function search(
     searchWords: string[],
     searchParams: SearchParams
-): Promise<Array<[string, { score: number; excerpts: string[] }]>> {
+): Promise<Array<ChapterSearchData>> {
     const numChapters = (await ALL_TEXT_PROMISE).length;
     return parseChapters(0, numChapters, searchWords, searchParams);
 }
@@ -32,28 +33,20 @@ export async function parseChapters(
     numChapters: number,
     searchWords: string[],
     searchParams: SearchParams
-): Promise<Array<[string, { score: number; excerpts: string[] }]>> {
+): Promise<Array<ChapterSearchData>> {
     const allText = await ALL_TEXT_PROMISE;
-    const data: Array<[string, { score: number; excerpts: string[] }]> = [];
+    const data: Array<ChapterSearchData> = [];
     for (let i = 0; i < numChapters; i++) {
         const chapter = allText[start + i];
         if (chapter) {
-            const [chapterName, text] = chapter;
-            data.push([
-                chapterName,
-                scoreText(text, searchWords, searchParams),
-            ]);
+            const [name, url, text] = chapter;
+            const { score, excerpts } = scoreText(
+                text,
+                searchWords,
+                searchParams
+            );
+            data.push({ name, url, score, excerpts });
         }
     }
     return data;
-}
-
-/**
- * Parses the raw search string.
- *
- * @param rawSearch input search text
- * @returns array of nonempty search strings
- */
-function parseSearchInput(rawSearch: string): string[] {
-    return rawSearch.split(" ").filter((word) => word.length > 0);
 }
