@@ -97,7 +97,6 @@ export function scoreText(
     for (const cluster of excerptIndices) {
         let clusterText = "";
         let rightMost = 0; // tracks the first index after the most recently added paragraph
-        let numParagraphs = 0;
         let numHits = 0; // tracks number of indices of the cluster we've seen so far
         for (const index of cluster) {
             if (index >= rightMost) {
@@ -105,23 +104,16 @@ export function scoreText(
                 while (r <= index) {
                     const { left, right, text } = getParagraph(r);
                     clusterText += `<p>${text}</p>`;
-                    numParagraphs++;
                     r = right;
                 }
                 rightMost = r;
             }
             numHits++;
-            if (numParagraphs >= MAX_PARAGRAPHS_PER_EXCERPT) {
-                excerpts.push([clusterText, numHits]);
-                numParagraphs = 0;
-                numHits = 0;
-                clusterText = "";
-            }
         }
-        if (numHits > 0) excerpts.push([clusterText, numHits]);
+        if (numHits > 0) {
+            excerpts.push([clusterText, numHits]);
+        }
     }
-
-    excerpts.sort((cluster1, cluster2) => cluster2[1] - cluster1[1]);
 
     return {
         score,
@@ -218,7 +210,6 @@ function minDifference(arr1: number[], arr2: number[]): number {
     return currMin;
 }
 
-const MAX_PARAGRAPHS_PER_EXCERPT = 3;
 const EXCERPT_RADIUS = 200;
 const SEARCH_LENGTH_TO_TRIGGER_FILLER = 4;
 const FILLER = new Set([
