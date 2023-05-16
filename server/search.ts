@@ -15,7 +15,9 @@ export async function search(
     searchParams: SearchParams
 ): Promise<Array<ChapterSearchData>> {
     const numChapters = (await ALL_TEXT_PROMISE).length;
-    return parseChapters(0, numChapters, searchWords, searchParams);
+    const ret = parseChapters(0, numChapters, searchWords, searchParams);
+    console.log("search concluded");
+    return ret;
 }
 
 /**

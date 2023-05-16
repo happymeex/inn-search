@@ -4,32 +4,59 @@
     <head>
         <title>TWI Searcher</title>
         <script src="index.js" type="module"></script>
+        <link rel="stylesheet" href="style.css" />
     </head>
     <body>
         <header>
-            <h1>Search The Wandering Inn!</h1>
+            <h1>Search The Wandering Inn</h1>
         </header>
         <main>
-            Ok
             <article>
                 <form id="search-form">
-                    <input type="text" id="search-input" name="input" />
-                    <button type="submit">Search</button>
-                    Case sensitivity:
-                    <label>
-                        <input type="radio" value="true" name="caseSensitive" />
-                        On
-                    </label>
-                    <label>
+                    <div id="searchbar-holder">
                         <input
-                            type="radio"
-                            value="false"
-                            checked
-                            name="caseSensitive"
+                            type="text"
+                            id="search-input"
+                            name="input"
+                            required
+                            placeholder=""
                         />
-                        Off
-                    </label>
+                        <button type="submit">Search</button>
+                    </div>
+                    <section id="options">
+                        <section>
+                            <b> Sort results by: </b>
+                            <label>
+                                <input
+                                    type="radio"
+                                    value="relevance"
+                                    checked
+                                    name="sortType"
+                                />
+                                Relevance
+                            </label>
+                            <label>
+                                <input
+                                    type="radio"
+                                    value="earliest"
+                                    name="sortType"
+                                />
+                                Earliest
+                            </label>
+                            <label>
+                                <input
+                                    type="radio"
+                                    value="latest"
+                                    name="sortType"
+                                />
+                                Latest
+                            </label>
+                        </section>
+                        <span id="num-results"></span>
+                    </section>
                 </form>
+                <hr />
+                <article id="results-holder"></article>
             </article>
         </main>
     </body>
