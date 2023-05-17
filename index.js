@@ -51,12 +51,11 @@ searchForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(searchForm);
     const input = formData.get("input");
-    //const caseSensitive = formData.get("caseSensitive") === "true";
+
+    if (pushToHistory) history.pushState({ input }, "");
+    handleEasterEgg();
+
     const query = parseSearch(input);
-    if (pushToHistory) {
-        history.pushState({ input }, "");
-        console.log("pushed to history", input);
-    }
     if (query.length === 0) {
         // TODO: notify user of bad query
         return;
@@ -231,6 +230,15 @@ function parseSearch(rawSearch) {
         .replace(",", " ")
         .split(" ")
         .filter((word) => word.length > 0);
+}
+
+function handleEasterEgg() {
+    let numSearches = localStorage.getItem("numSearches");
+    if (numSearches === null) {
+        numSearches = 0;
+    } else numSearches = parseInt(numSearches);
+    console.log(numSearches + 1, "searches now");
+    localStorage.setItem("numSearches", (numSearches + 1).toString());
 }
 
 /**
