@@ -2,6 +2,7 @@ import {
     parseSearch,
     formatParams,
     setPlaceholder,
+    boldKeywords,
     handleEasterEgg,
 } from "./utils.js";
 const BASE_URL = "https://wanderinginn.com";
@@ -19,6 +20,7 @@ const nextButton = document.querySelector("#next-button");
 let nextClickHandler;
 const noResults = document.querySelector("#no-results");
 const backToTop = document.querySelector("#back-to-top-holder");
+let query = undefined; // track current array of search keywords
 
 function handleHistory() {
     const input = history.state?.input;
@@ -43,7 +45,7 @@ searchInput.focus();
  * @param {string} input
  */
 async function handleSearch(input) {
-    const query = parseSearch(input);
+    query = parseSearch(input);
     if (query.length === 0) {
         // TODO: notify user of bad query
         return;
@@ -84,7 +86,6 @@ function displayResults(data, sort = true, page = 0) {
         const sortType = document.querySelector(
             `input[name="sortType"]:checked`
         ).value;
-        console.log(sortType);
         if (sortType === "relevance") {
             data.sort((ch1, ch2) => ch2.score - ch1.score);
         } else if (sortType === "latest") {
@@ -135,11 +136,13 @@ function makeSearchResultDiv(chapter) {
     div.classList.add("result-singleChapter");
     div.setAttribute("all-results", "false");
     div.id = chapter.url;
+    const contentString = boldKeywords(
+        chapter.excerpts.slice(0, NUM_PREVIEWS).join("<hr />"),
+        query
+    );
     div.innerHTML = `
-        <a href="${BASE_URL}${
-        chapter.url
-    }" target="_blank" class="results-chapterName">${chapter.name}</a>
-        ${chapter.excerpts.slice(0, NUM_PREVIEWS).join("<hr />")}<hr />
+        <a href="${BASE_URL}${chapter.url}" target="_blank" class="results-chapterName">${chapter.name}</a>
+        ${contentString}<hr />
     `;
     if (chapter.excerpts.length > NUM_PREVIEWS) {
         div.classList.add("expandable");

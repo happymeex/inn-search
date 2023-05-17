@@ -122,6 +122,11 @@ hr {
     color: var(--gold);
 }
 
+.highlighted-keyword {
+    font-weight: 900;
+    color: white;
+}
+
 #options {
     display: flex;
     justify-content: space-between;

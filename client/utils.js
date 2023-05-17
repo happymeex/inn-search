@@ -8,10 +8,8 @@ function parseSearch(rawSearch) {
     const quotedRegex = /"(.*?)"/g;
     const quotesRemoved = rawSearch.replace(quotedRegex, " ");
     const quoted = [...rawSearch.matchAll(quotedRegex)].map((item) => item[1]);
-    return quotesRemoved
-        .replace(/[.,"*]/g, " ")
-        .split(" ")
-        .concat(quoted)
+    return quoted
+        .concat(quotesRemoved.replace(/[.,"*]/g, " ").split(" "))
         .filter((word) => word.length > 0);
 }
 
@@ -25,6 +23,36 @@ function formatParams(params) {
     return Object.keys(params)
         .map((key) => `${key}=${encodeURIComponent(params[key])}`)
         .join("&");
+}
+
+/**
+ * Wraps each occurrence of a word in `words` with <b></b> tags
+ * and returns the result
+ *
+ * @param {string} text
+ * @param {string[]} words
+ * @returns {string}
+ */
+function boldKeywords(text, words) {
+    let ret = text;
+    words.forEach((word) => {
+        const regex = new RegExp(cleanWord(word), "gi");
+        ret = ret.replaceAll(
+            regex,
+            (word) => `<b class="highlighted-keyword">${word}</b>`
+        );
+    });
+    return ret;
+}
+
+/**
+ * Sanitizes a word so that a RegExp constructed from the result does not throw an error
+ *
+ * @param word string to clean
+ * @returns string with special regex-breaking characters escaped with double backslashes
+ */
+function cleanWord(word) {
+    return word.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
 }
 
 /**
@@ -55,4 +83,10 @@ function handleEasterEgg() {
     localStorage.setItem("numSearches", (numSearches + 1).toString());
 }
 
-export { parseSearch, formatParams, setPlaceholder, handleEasterEgg };
+export {
+    parseSearch,
+    formatParams,
+    setPlaceholder,
+    boldKeywords,
+    handleEasterEgg,
+};
