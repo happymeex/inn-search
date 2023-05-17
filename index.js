@@ -1,6 +1,20 @@
 const BASE_URL = "https://wanderinginn.com";
 const RESULTS_PER_PAGE = 10;
+const NUM_PREVIEWS = 3;
 let currPage = undefined; // current page number of search results
+
+/**
+ * Holds current search result data
+ *
+ * @type {Array<{
+ *      name: string,
+ *      url: string,
+ *      score: number,
+ *      index: number,
+ *      excerpts: string[]}>
+ *  | undefined}
+ */
+let searchData = undefined;
 
 const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector("#search-input");
@@ -42,7 +56,7 @@ searchForm.addEventListener("submit", async (e) => {
     data.forEach((ch, i) => {
         ch.index = i;
     });
-    console.log(data);
+    searchData = data;
     displayResults(data);
     currPage = 1;
     displayResultCount();
@@ -78,11 +92,44 @@ function displayResults(data) {
  */
 function makeSearchResultDiv(chapter) {
     const div = document.createElement("div");
+    div.classList.add("result-singleChapter");
+    div.setAttribute("all-results", "false");
+    div.id = chapter.url;
     div.innerHTML = `
-        <a href="${BASE_URL}${chapter.url}" target="_blank">${chapter.name}</a>
-        ${chapter.excerpts.join("<hr />")}
+        <a href="${BASE_URL}${
+        chapter.url
+    }" target="_blank" class="results-chapterName">${chapter.name}</a>
+        ${chapter.excerpts.slice(0, NUM_PREVIEWS).join("<hr />")}<hr />
     `;
+    if (chapter.excerpts.length > NUM_PREVIEWS) {
+        const rest = `${chapter.excerpts
+            .slice(NUM_PREVIEWS)
+            .join("<hr />")}<hr />`;
+        const initial = div.innerHTML;
+        div.addEventListener("click", () => {
+            toggleFullSearchResult(div, initial, rest);
+        });
+    }
     resultsHolder.append(div);
+}
+
+/**
+ * If the `all-results` attribute of `div` is `" false"`,
+ * appends `rest` to the innerHTML of `div`. Otherwise,
+ * sets the innerHTML to `initial`
+ *
+ * @param {HTMLDivElement} div
+ * @param {string} initial
+ * @param {string} rest
+ */
+function toggleFullSearchResult(div, initial, rest) {
+    const state = div.getAttribute("all-results");
+    if (state === "false") {
+        div.innerHTML += rest;
+    } else if (state === "true") {
+        div.innerHTML = initial;
+    }
+    div.setAttribute("all-results", state === "false" ? "true" : "false");
 }
 
 /**

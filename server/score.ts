@@ -211,7 +211,7 @@ function minDifference(arr1: number[], arr2: number[]): number {
 }
 
 const EXCERPT_RADIUS = 200;
-const SEARCH_LENGTH_TO_TRIGGER_FILLER = 4;
+const SEARCH_LENGTH_TO_TRIGGER_FILLER = 3;
 const FILLER = new Set([
     "a",
     "to",
@@ -237,4 +237,5 @@ const FILLER = new Set([
     "does",
     "get",
     "be",
+    "for",
 ]);
