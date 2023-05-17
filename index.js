@@ -11,7 +11,6 @@ const prevButton = document.querySelector("#prev-button");
 let prevClickHandler;
 const nextButton = document.querySelector("#next-button");
 let nextClickHandler;
-let pushToHistory = true;
 
 //history.pushState({ input: false }, "");
 
@@ -74,7 +73,7 @@ searchForm.addEventListener("submit", async (e) => {
     const formData = new FormData(searchForm);
     const input = formData.get("input");
 
-    if (pushToHistory) history.pushState({ input }, "");
+    history.pushState({ input }, "");
     handleEasterEgg();
 
     void handleSearch(input);
