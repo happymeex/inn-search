@@ -11,6 +11,26 @@ const prevButton = document.querySelector("#prev-button");
 let prevClickHandler;
 const nextButton = document.querySelector("#next-button");
 let nextClickHandler;
+let pushToHistory = true;
+
+history.pushState({ input: false }, "");
+
+function handleHistory() {
+    console.log("history state:", history.state);
+    const input = history.state?.input;
+    if (input) {
+        searchInput.value = input;
+        const evt = new Event("submit");
+        pushToHistory = false;
+        searchForm.dispatchEvent(evt);
+        pushToHistory = true;
+    } else if (input === false) {
+        searchInput.value = "";
+        clearSearchResults();
+    }
+}
+
+window.addEventListener("popstate", handleHistory);
 
 function setPlaceholder() {
     const index = Math.floor(0.99 * Math.random() * placeholders.length);
@@ -33,6 +53,10 @@ searchForm.addEventListener("submit", async (e) => {
     const input = formData.get("input");
     //const caseSensitive = formData.get("caseSensitive") === "true";
     const query = parseSearch(input);
+    if (pushToHistory) {
+        history.pushState({ input }, "");
+        console.log("pushed to history", input);
+    }
     if (query.length === 0) {
         // TODO: notify user of bad query
         return;
@@ -79,6 +103,8 @@ function displayResults(data, sort = true, page = 0) {
     prevButton.removeEventListener("click", prevClickHandler);
     nextButton.removeEventListener("click", nextClickHandler);
     const numPages = Math.ceil(data.length / RESULTS_PER_PAGE);
+    const isFirstPage = page === 0;
+    const isLastPage = page === numPages - 1;
     prevClickHandler = () => {
         makePageHandler(page > 0, page - 1)(data);
     };
@@ -89,16 +115,14 @@ function displayResults(data, sort = true, page = 0) {
     data.slice(page * RESULTS_PER_PAGE, (page + 1) * RESULTS_PER_PAGE).forEach(
         makeSearchResultDiv
     );
-    if (page === 0) prevButton.setAttribute("disabled", "");
-    else {
-        prevButton.removeAttribute("disabled");
+    for (const [isEdgeCase, button, handler] of [
+        [isFirstPage, prevButton, prevClickHandler],
+        [isLastPage, nextButton, nextClickHandler],
+    ]) {
+        if (isEdgeCase) button.setAttribute("disabled", "");
+        else button.removeAttribute("disabled");
+        button.addEventListener("click", handler);
     }
-    if (page === numPages - 1) nextButton.setAttribute("disabled", "");
-    else {
-        nextButton.removeAttribute("disabled");
-    }
-    prevButton.addEventListener("click", prevClickHandler);
-    nextButton.addEventListener("click", nextClickHandler);
 }
 
 /**
@@ -152,8 +176,8 @@ function toggleFullSearchResult(div, initial, rest) {
  * Removes all search results from DOM
  */
 function clearSearchResults() {
-    while (resultsHolder.firstElementChild) {
-        resultsHolder.firstElementChild.remove();
+    while (resultsHolder.lastElementChild) {
+        resultsHolder.lastElementChild.remove();
     }
 }
 

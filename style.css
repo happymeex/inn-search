@@ -70,6 +70,10 @@ hr {
 }
 
 #results-holder hr {
+    filter: brightness(0.7);
+}
+
+#results-holder hr:not(:last-child) {
     width: calc(0.95 * var(--content-width));
     filter: brightness(0.7);
 }
@@ -114,10 +118,19 @@ hr {
 }
 
 #page-navigator button:hover {
-    filter: brightness(0.8);
+    filter: brightness(0.85);
     transition: 0.2s;
 }
 
 #page-navigator button:disabled {
+    cursor: initial;
     filter: brightness(0.6);
+}
+
+.unexpanded {
+    overflow: hidden;
+}
+
+.expanded {
+    overflow: initial;
 }
