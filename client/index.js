@@ -21,17 +21,7 @@ let nextClickHandler;
 const noResults = document.querySelector("#no-results");
 const backToTop = document.querySelector("#back-to-top-holder");
 let query = undefined; // track current array of search keywords
-
-function handleHistory() {
-    const input = history.state?.input;
-    if (input) {
-        searchInput.value = input;
-        handleSearch(input);
-    } else if (history.state === null) {
-        searchInput.value = "";
-        clearSearchResults();
-    }
-}
+const title = document.querySelector("#title");
 
 window.addEventListener("popstate", handleHistory);
 
@@ -39,6 +29,11 @@ setPlaceholder(searchInput);
 searchInput.focus();
 backToTop.addEventListener("click", () => {
     document.documentElement.scrollTop = 0;
+});
+title.addEventListener("click", () => {
+    clearSearchResults();
+    searchInput.value = "";
+    history.pushState({ input: undefined }, "");
 });
 
 /**
@@ -49,17 +44,18 @@ backToTop.addEventListener("click", () => {
  */
 async function handleSearch(input) {
     query = parseSearch(input);
+    let data;
     if (query.length === 0) {
-        // TODO: notify user of bad query
-        return;
+        data = [];
+    } else {
+        console.log("querying:", query);
+        const qParams = formatParams({ query });
+        const res = await fetch(`/search?${qParams}`);
+        data = JSON.parse(await res.text());
+        data.forEach((ch, i) => {
+            ch.index = i;
+        });
     }
-    console.log("querying:", query);
-    const qParams = formatParams({ query });
-    const res = await fetch(`/search?${qParams}`);
-    const data = JSON.parse(await res.text());
-    data.forEach((ch, i) => {
-        ch.index = i;
-    });
     currPage = 0;
     displayResults(data);
     setPlaceholder(searchInput);
@@ -180,7 +176,7 @@ function toggleFullSearchResult(div, initial, rest) {
 }
 
 /**
- * Removes all search results from DOM
+ * Removes all search results from DOM (but does not clear searchbar)
  */
 function clearSearchResults() {
     backToTop.classList.add("display-none");
@@ -230,4 +226,16 @@ function makePageHandler(condition, page) {
             displayResultCount(data.length);
         }
     };
+}
+
+function handleHistory() {
+    const input = history.state?.input;
+    if (history.state === null || input === undefined) {
+        // should take us back to empty search *without* "no results" message
+        searchInput.value = "";
+        clearSearchResults();
+    } else if (input !== undefined) {
+        searchInput.value = input;
+        handleSearch(input);
+    }
 }

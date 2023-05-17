@@ -17,13 +17,9 @@ header {
     text-align: center;
     margin: 0;
     padding: 1em 0 0.5em;
-}
-
-#title a {
-    font-size: inherit;
-    text-decoration: none;
     color: var(--gold);
     font-family: var(--serif);
+    cursor: pointer;
 }
 
 body * {
