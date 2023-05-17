@@ -5,9 +5,13 @@
  * @returns {string[]}
  */
 function parseSearch(rawSearch) {
-    return rawSearch
-        .replace(",", " ")
+    const quotedRegex = /"(.*?)"/g;
+    const quotesRemoved = rawSearch.replace(quotedRegex, " ");
+    const quoted = [...rawSearch.matchAll(quotedRegex)].map((item) => item[1]);
+    return quotesRemoved
+        .replace(/[.,"*]/g, " ")
         .split(" ")
+        .concat(quoted)
         .filter((word) => word.length > 0);
 }
 
