@@ -2,14 +2,18 @@
     gap: 0.3em;
 }
 
-#page-navigator button {
+#back-to-top-holder {
+    margin-bottom: 2em;
+}
+
+:is(#page-navigator, #back-to-top-holder) button {
     color: var(--gold);
     border: none;
     background-color: transparent;
     cursor: pointer;
 }
 
-#page-navigator button:hover {
+:is(#page-navigator, #back-to-top-holder) button:hover {
     filter: brightness(0.85);
     transition: 0.2s;
 }

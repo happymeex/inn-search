@@ -15,10 +15,15 @@ header {
 
 #title {
     text-align: center;
-    font-family: var(--serif);
     margin: 0;
     padding: 1em 0 0.5em;
+}
+
+#title a {
+    font-size: inherit;
+    text-decoration: none;
     color: var(--gold);
+    font-family: var(--serif);
 }
 
 body * {
@@ -135,19 +140,6 @@ hr {
 .flex-end {
     display: flex;
     justify-content: flex-end;
-}
-
-#back-to-top-holder {
-    margin-bottom: 2em;
-}
-
-#back-to-top-holder a {
-    color: var(--gold);
-    text-decoration: none;
-}
-#back-to-top-holder a:hover {
-    transition: 0.2s;
-    filter: brightness(0.85);
 }
 
 .display-none {

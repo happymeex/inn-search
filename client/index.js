@@ -37,6 +37,9 @@ window.addEventListener("popstate", handleHistory);
 
 setPlaceholder(searchInput);
 searchInput.focus();
+backToTop.addEventListener("click", () => {
+    document.documentElement.scrollTop = 0;
+});
 
 /**
  * Carries out the search given the raw input `input` and updates the UI
