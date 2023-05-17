@@ -1,0 +1,22 @@
+#page-navigator {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.3em;
+}
+
+#page-navigator button {
+    color: var(--gold);
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+#page-navigator button:hover {
+    filter: brightness(0.85);
+    transition: 0.2s;
+}
+
+#page-navigator button:disabled {
+    cursor: initial;
+    filter: brightness(0.6);
+}

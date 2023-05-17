@@ -140,12 +140,13 @@ function makeSearchResultDiv(chapter) {
         ${chapter.excerpts.slice(0, NUM_PREVIEWS).join("<hr />")}<hr />
     `;
     if (chapter.excerpts.length > NUM_PREVIEWS) {
+        div.classList.add("expandable");
         const rest = `${chapter.excerpts
             .slice(NUM_PREVIEWS)
             .join("<hr />")}<hr />`;
         const initial = div.innerHTML;
-        div.addEventListener("click", () => {
-            toggleFullSearchResult(div, initial, rest);
+        div.addEventListener("click", (e) => {
+            if (e.target === div) toggleFullSearchResult(div, initial, rest);
         });
     }
     resultsHolder.append(div);
@@ -192,7 +193,7 @@ function displayResultCount(numResults) {
     const numPages = Math.ceil(numResults / RESULTS_PER_PAGE);
     resultCounter.innerHTML =
         currPage !== undefined
-            ? `Showing results from ${numResults} chapters, page ${
+            ? `Results from ${numResults} chapters, page ${
                   currPage + 1
               } of ${numPages}`
             : "";
