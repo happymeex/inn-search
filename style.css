@@ -69,6 +69,13 @@ hr {
     border-top: 1px solid var(--med-grey);
 }
 
+#no-results {
+    text-align: center;
+    margin-top: 2em;
+    color: var(--gold);
+    font-size: 1.5em;
+}
+
 #results-holder hr {
     filter: brightness(0.7);
 }
@@ -133,4 +140,12 @@ hr {
 
 .expanded {
     overflow: initial;
+}
+
+.display-none {
+    display: none;
+}
+
+.display {
+    display: initial;
 }

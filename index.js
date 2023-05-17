@@ -11,6 +11,7 @@ const prevButton = document.querySelector("#prev-button");
 let prevClickHandler;
 const nextButton = document.querySelector("#next-button");
 let nextClickHandler;
+const noResults = document.querySelector("#no-results");
 
 //history.pushState({ input: false }, "");
 
@@ -64,7 +65,6 @@ async function handleSearch(input) {
     });
     displayResults(data);
     currPage = 0;
-    displayResultCount(data.length);
     setPlaceholder();
 }
 
@@ -114,9 +114,14 @@ function displayResults(data, sort = true, page = 0) {
         makePageHandler(page < numPages - 1, page + 1)(data);
     };
     clearSearchResults();
+    if (numPages === 0) {
+        noResults.classList.remove("display-none");
+        return;
+    }
     data.slice(page * RESULTS_PER_PAGE, (page + 1) * RESULTS_PER_PAGE).forEach(
         makeSearchResultDiv
     );
+    displayResultCount(data.length);
     for (const [isEdgeCase, button, handler] of [
         [isFirstPage, prevButton, prevClickHandler],
         [isLastPage, nextButton, nextClickHandler],
@@ -178,6 +183,7 @@ function toggleFullSearchResult(div, initial, rest) {
  * Removes all search results from DOM
  */
 function clearSearchResults() {
+    noResults.classList.add("display-none");
     while (resultsHolder.lastElementChild) {
         resultsHolder.lastElementChild.remove();
     }
