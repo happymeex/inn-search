@@ -1,6 +1,6 @@
 const BASE_URL = "https://wanderinginn.com";
 const RESULTS_PER_PAGE = 10;
-const NUM_PREVIEWS = 3;
+const NUM_PREVIEWS = 3; // number of excerpts shown per search result
 let currPage = undefined; // current page number of search results
 
 const searchForm = document.querySelector("#search-form");
@@ -13,10 +13,7 @@ const nextButton = document.querySelector("#next-button");
 let nextClickHandler;
 const noResults = document.querySelector("#no-results");
 
-//history.pushState({ input: false }, "");
-
 function handleHistory() {
-    console.log("history state:", history.state);
     const input = history.state?.input;
     if (input) {
         searchInput.value = input;
@@ -83,7 +80,7 @@ searchForm.addEventListener("submit", async (e) => {
  * Displays the `page`th page of results.
  *
  * @param {Array<{name: string, url: string, score: number, excerpts: string[]}>} data
- *      array of chapter search results, sorted from earliest to latest
+ *      array of chapter search results
  * @param {boolean} sort if true, sorts the data according to the radio input's value, true by default
  * @param {number} page zero-indexed page number, 0 by default
  */
@@ -244,6 +241,7 @@ function parseSearch(rawSearch) {
         .filter((word) => word.length > 0);
 }
 
+/** Tee-hee! */
 function handleEasterEgg() {
     let numSearches = localStorage.getItem("numSearches");
     if (numSearches === null) {

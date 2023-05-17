@@ -4,9 +4,10 @@
     "description": "",
     "main": "index.js",
     "scripts": {
+        "start": "npm run compile && npm run server",
         "server": "node dist/server/server.js",
         "compile": "npx tsc && npm run copy",
-        "copy": "cp index.html dist/index.html && cp index.js dist/index.js && cp style.css dist/style.css"
+        "copy": "cp client/* dist"
     },
     "keywords": [],
     "author": "",
