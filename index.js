@@ -13,18 +13,15 @@ const nextButton = document.querySelector("#next-button");
 let nextClickHandler;
 let pushToHistory = true;
 
-history.pushState({ input: false }, "");
+//history.pushState({ input: false }, "");
 
 function handleHistory() {
     console.log("history state:", history.state);
     const input = history.state?.input;
     if (input) {
         searchInput.value = input;
-        const evt = new Event("submit");
-        pushToHistory = false;
-        searchForm.dispatchEvent(evt);
-        pushToHistory = true;
-    } else if (input === false) {
+        handleSearch(input);
+    } else if (history.state === null) {
         searchInput.value = "";
         clearSearchResults();
     }
@@ -41,30 +38,26 @@ const placeholders = [
     "No killing Goblins!",
     "Seek and ye shall find.",
     "Scry! Scry!",
-    "[Searcher] at your service.",
+    "Welcome, [Searcher].",
 ];
 
 setPlaceholder();
 searchInput.focus();
 
-searchForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = new FormData(searchForm);
-    const input = formData.get("input");
-
-    if (pushToHistory) history.pushState({ input }, "");
-    handleEasterEgg();
-
+/**
+ * Carries out the search given the raw input `input` and updates the UI
+ * accordingly once the results are fetched.
+ *
+ * @param {string} input
+ */
+async function handleSearch(input) {
     const query = parseSearch(input);
     if (query.length === 0) {
         // TODO: notify user of bad query
         return;
     }
-    const qParams = formatParams({
-        query,
-        caseSensitive: false,
-    });
-    console.log(qParams);
+    console.log("querying:", query);
+    const qParams = formatParams({ query });
     const res = await fetch(`/search?${qParams}`);
     const data = JSON.parse(await res.text());
     data.forEach((ch, i) => {
@@ -74,6 +67,17 @@ searchForm.addEventListener("submit", async (e) => {
     currPage = 0;
     displayResultCount(data.length);
     setPlaceholder();
+}
+
+searchForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(searchForm);
+    const input = formData.get("input");
+
+    if (pushToHistory) history.pushState({ input }, "");
+    handleEasterEgg();
+
+    void handleSearch(input);
 });
 
 /**
@@ -178,6 +182,9 @@ function clearSearchResults() {
     while (resultsHolder.lastElementChild) {
         resultsHolder.lastElementChild.remove();
     }
+    resultCounter.innerHTML = "";
+    prevButton.setAttribute("disabled", "");
+    nextButton.setAttribute("disabled", "");
 }
 
 /**
