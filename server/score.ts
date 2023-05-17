@@ -25,7 +25,10 @@ export function scoreText(
     );
     const regexes = filteredWords.map((word): [string, RegExp] => [
         word,
-        new RegExp(word, `g${searchParams.caseSensitive ? "" : "i"}`),
+        new RegExp(
+            cleanWord(word),
+            `g${searchParams.caseSensitive ? "" : "i"}`
+        ),
     ]);
 
     let numMatches = 0;
@@ -208,6 +211,16 @@ function minDifference(arr1: number[], arr2: number[]): number {
         } else i++;
     }
     return currMin;
+}
+
+/**
+ * Sanitizes a word so that a RegExp constructed from the result does not throw an error
+ *
+ * @param word string to clean
+ * @returns string with special regex-breaking characters escaped with double backslashes
+ */
+function cleanWord(word) {
+    return word.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
 }
 
 const EXCERPT_RADIUS = 200;
