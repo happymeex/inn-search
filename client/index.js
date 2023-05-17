@@ -1,3 +1,9 @@
+import {
+    parseSearch,
+    formatParams,
+    setPlaceholder,
+    handleEasterEgg,
+} from "./utils.js";
 const BASE_URL = "https://wanderinginn.com";
 const RESULTS_PER_PAGE = 10;
 const NUM_PREVIEWS = 3; // number of excerpts shown per search result
@@ -26,19 +32,7 @@ function handleHistory() {
 
 window.addEventListener("popstate", handleHistory);
 
-function setPlaceholder() {
-    const index = Math.floor(0.99 * Math.random() * placeholders.length);
-    searchInput.setAttribute("placeholder", placeholders[index]);
-}
-
-const placeholders = [
-    "No killing Goblins!",
-    "Seek and ye shall find.",
-    "Scry! Scry!",
-    "Welcome, [Searcher].",
-];
-
-setPlaceholder();
+setPlaceholder(searchInput);
 searchInput.focus();
 
 /**
@@ -60,9 +54,9 @@ async function handleSearch(input) {
     data.forEach((ch, i) => {
         ch.index = i;
     });
-    displayResults(data);
     currPage = 0;
-    setPlaceholder();
+    displayResults(data);
+    setPlaceholder(searchInput);
 }
 
 searchForm.addEventListener("submit", async (e) => {
@@ -226,39 +220,4 @@ function makePageHandler(condition, page) {
             displayResultCount(data.length);
         }
     };
-}
-
-/**
- * Tokenizes a raw search input.
- *
- * @param {string} rawSearch
- * @returns {string[]}
- */
-function parseSearch(rawSearch) {
-    return rawSearch
-        .replace(",", " ")
-        .split(" ")
-        .filter((word) => word.length > 0);
-}
-
-/** Tee-hee! */
-function handleEasterEgg() {
-    let numSearches = localStorage.getItem("numSearches");
-    if (numSearches === null) {
-        numSearches = 0;
-    } else numSearches = parseInt(numSearches);
-    console.log(numSearches + 1, "searches now");
-    localStorage.setItem("numSearches", (numSearches + 1).toString());
-}
-
-/**
- * Formats JSON-like parameter object
- *
- * @param {Object} params
- * @returns {string}
- */
-function formatParams(params) {
-    return Object.keys(params)
-        .map((key) => `${key}=${encodeURIComponent(params[key])}`)
-        .join("&");
 }
