@@ -1,6 +1,4 @@
 #page-navigator {
-    display: flex;
-    justify-content: flex-end;
     gap: 0.3em;
 }
 

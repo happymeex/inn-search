@@ -18,6 +18,7 @@ let prevClickHandler;
 const nextButton = document.querySelector("#next-button");
 let nextClickHandler;
 const noResults = document.querySelector("#no-results");
+const backToTop = document.querySelector("#back-to-top-holder");
 
 function handleHistory() {
     const input = history.state?.input;
@@ -113,6 +114,7 @@ function displayResults(data, sort = true, page = 0) {
         makeSearchResultDiv
     );
     displayResultCount(data.length);
+    backToTop.classList.remove("display-none");
     for (const [isEdgeCase, button, handler] of [
         [isFirstPage, prevButton, prevClickHandler],
         [isLastPage, nextButton, nextClickHandler],
@@ -175,6 +177,7 @@ function toggleFullSearchResult(div, initial, rest) {
  * Removes all search results from DOM
  */
 function clearSearchResults() {
+    backToTop.classList.add("display-none");
     noResults.classList.add("display-none");
     while (resultsHolder.lastElementChild) {
         resultsHolder.lastElementChild.remove();

@@ -127,6 +127,24 @@ hr {
     justify-content: space-between;
 }
 
+.flex-end {
+    display: flex;
+    justify-content: flex-end;
+}
+
+#back-to-top-holder {
+    margin-bottom: 2em;
+}
+
+#back-to-top-holder a {
+    color: var(--gold);
+    text-decoration: none;
+}
+#back-to-top-holder a:hover {
+    transition: 0.2s;
+    filter: brightness(0.85);
+}
+
 .display-none {
     display: none;
 }

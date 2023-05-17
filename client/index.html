@@ -63,11 +63,16 @@
                     </section>
                 </form>
                 <hr />
-                <div id="page-navigator">
+                <div id="page-navigator" class="flex-end">
                     <button id="prev-button" disabled>Previous</button>
                     <button id="next-button" disabled>Next</button>
                 </div>
                 <article id="results-holder"></article>
+                <div id="back-to-top-holder" class="display-none flex-end">
+                    <a href="#title" onclick="{(e) => {e.preventDefault()}}"
+                        >Back to top</a
+                    >
+                </div>
             </article>
         </main>
         <div id="no-results" class="display-none">
