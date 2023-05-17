@@ -56,6 +56,17 @@ function cleanWord(word) {
 }
 
 /**
+ * Reveals a div with a given message written in it
+ *
+ * @param {HTMLDivElement} div
+ * @param {string} message
+ */
+function displayMessageDiv(div, message) {
+    div.innerHTML = message;
+    div.classList.remove("display-none");
+}
+
+/**
  * Sets the placeholder of an HTML input element to a randomly selected
  * string from `placeholders`
  *
@@ -87,6 +98,7 @@ export {
     parseSearch,
     formatParams,
     setPlaceholder,
+    displayMessageDiv,
     boldKeywords,
     handleEasterEgg,
 };

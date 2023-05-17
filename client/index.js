@@ -2,12 +2,14 @@ import {
     parseSearch,
     formatParams,
     setPlaceholder,
+    displayMessageDiv,
     boldKeywords,
     handleEasterEgg,
 } from "./utils.js";
 const BASE_URL = "https://wanderinginn.com";
 const RESULTS_PER_PAGE = 10;
 const NUM_PREVIEWS = 3; // number of excerpts shown per search result
+const NO_RESULTS_MESSAGE = "No results found. Check the incantation?";
 let currPage = undefined; // current page number of search results
 
 const searchForm = document.querySelector("#search-form");
@@ -44,18 +46,17 @@ title.addEventListener("click", () => {
  */
 async function handleSearch(input) {
     query = parseSearch(input);
-    let data;
-    if (query.length === 0) {
-        data = [];
-    } else {
-        console.log("querying:", query);
-        const qParams = formatParams({ query });
-        const res = await fetch(`/search?${qParams}`);
-        data = JSON.parse(await res.text());
-        data.forEach((ch, i) => {
-            ch.index = i;
-        });
+    console.log("querying:", query);
+    const qParams = formatParams({ query });
+    const res = await fetch(`/search?${qParams}`);
+    if (res.status === 500) {
+        displayMessageDiv(noResults, "Server error!");
+        return;
     }
+    const data = JSON.parse(await res.text());
+    data.forEach((ch, i) => {
+        ch.index = i;
+    });
     currPage = 0;
     displayResults(data);
     setPlaceholder(searchInput);
@@ -107,7 +108,7 @@ function displayResults(data, sort = true, page = 0) {
     };
     clearSearchResults();
     if (numPages === 0) {
-        noResults.classList.remove("display-none");
+        displayMessageDiv(noResults, NO_RESULTS_MESSAGE);
         return;
     }
     data.slice(page * RESULTS_PER_PAGE, (page + 1) * RESULTS_PER_PAGE).forEach(
