@@ -3,23 +3,14 @@ const RESULTS_PER_PAGE = 10;
 const NUM_PREVIEWS = 3;
 let currPage = undefined; // current page number of search results
 
-/**
- * Holds current search result data
- *
- * @type {Array<{
- *      name: string,
- *      url: string,
- *      score: number,
- *      index: number,
- *      excerpts: string[]}>
- *  | undefined}
- */
-let searchData = undefined;
-
 const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector("#search-input");
 const resultsHolder = document.querySelector("#results-holder");
 const resultCounter = document.querySelector("#num-results");
+const prevButton = document.querySelector("#prev-button");
+let prevClickHandler;
+const nextButton = document.querySelector("#next-button");
+let nextClickHandler;
 
 function setPlaceholder() {
     const index = Math.floor(0.99 * Math.random() * placeholders.length);
@@ -56,33 +47,58 @@ searchForm.addEventListener("submit", async (e) => {
     data.forEach((ch, i) => {
         ch.index = i;
     });
-    searchData = data;
     displayResults(data);
-    currPage = 1;
-    displayResultCount();
+    currPage = 0;
+    displayResultCount(data.length);
     setPlaceholder();
 });
 
 /**
- * Displays search results.
+ * Displays the `page`th page of results.
  *
  * @param {Array<{name: string, url: string, score: number, excerpts: string[]}>} data
  *      array of chapter search results, sorted from earliest to latest
+ * @param {boolean} sort if true, sorts the data according to the radio input's value, true by default
+ * @param {number} page zero-indexed page number, 0 by default
  */
-function displayResults(data) {
-    const sortType = document.querySelector(
-        `input[name="sortType"]:checked`
-    ).value;
-    console.log(sortType);
-    if (sortType === "relevance") {
-        data.sort((ch1, ch2) => ch2.score - ch1.score);
-    } else if (sortType === "latest") {
-        data.sort((ch1, ch2) => ch2.index - ch1.index);
-    } else if (sortType === "earliest") {
-        data.sort((ch1, ch2) => ch1.index - ch2.index);
+function displayResults(data, sort = true, page = 0) {
+    if (sort) {
+        const sortType = document.querySelector(
+            `input[name="sortType"]:checked`
+        ).value;
+        console.log(sortType);
+        if (sortType === "relevance") {
+            data.sort((ch1, ch2) => ch2.score - ch1.score);
+        } else if (sortType === "latest") {
+            data.sort((ch1, ch2) => ch2.index - ch1.index);
+        } else if (sortType === "earliest") {
+            data.sort((ch1, ch2) => ch1.index - ch2.index);
+        }
     }
+
+    prevButton.removeEventListener("click", prevClickHandler);
+    nextButton.removeEventListener("click", nextClickHandler);
+    const numPages = Math.ceil(data.length / RESULTS_PER_PAGE);
+    prevClickHandler = () => {
+        makePageHandler(page > 0, page - 1)(data);
+    };
+    nextClickHandler = () => {
+        makePageHandler(page < numPages - 1, page + 1)(data);
+    };
     clearSearchResults();
-    data.forEach(makeSearchResultDiv);
+    data.slice(page * RESULTS_PER_PAGE, (page + 1) * RESULTS_PER_PAGE).forEach(
+        makeSearchResultDiv
+    );
+    if (page === 0) prevButton.setAttribute("disabled", "");
+    else {
+        prevButton.removeAttribute("disabled");
+    }
+    if (page === numPages - 1) nextButton.setAttribute("disabled", "");
+    else {
+        nextButton.removeAttribute("disabled");
+    }
+    prevButton.addEventListener("click", prevClickHandler);
+    nextButton.addEventListener("click", nextClickHandler);
 }
 
 /**
@@ -143,14 +159,41 @@ function clearSearchResults() {
 
 /**
  * Updates DOM info span with information on number of results and current page number
+ *
+ * @param {number} numResults
  */
-function displayResultCount() {
-    const numResults = resultsHolder.children.length;
+function displayResultCount(numResults) {
     const numPages = Math.ceil(numResults / RESULTS_PER_PAGE);
     resultCounter.innerHTML =
         currPage !== undefined
-            ? `Showing results from ${numResults} chapters, page ${currPage} of ${numPages}`
+            ? `Showing results from ${numResults} chapters, page ${
+                  currPage + 1
+              } of ${numPages}`
             : "";
+}
+
+/**
+ * Creates a handler function for clicking either "Previous" or "Next" page.
+ * The handler takes in search data as an input.
+ *
+ * @param {boolean} condition if false, handler does nothing
+ * @param {number} page page number to jump to on click
+ * @returns {(data: Array<{
+ *      name: string,
+ *      url: string,
+ *      score: number,
+ *      index: number,
+ *      excerpts: string[]
+ *  }>) => void} handler function
+ */
+function makePageHandler(condition, page) {
+    return (data) => {
+        if (condition) {
+            currPage = page;
+            displayResults(data, false, page);
+            displayResultCount(data.length);
+        }
+    };
 }
 
 /**
