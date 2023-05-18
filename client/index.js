@@ -146,9 +146,10 @@ function makeSearchResultDiv(chapter) {
     `;
     if (chapter.excerpts.length > NUM_PREVIEWS) {
         div.classList.add("expandable");
-        const rest = `${chapter.excerpts
-            .slice(NUM_PREVIEWS)
-            .join("<hr />")}<hr />`;
+        const rest = `${boldKeywords(
+            chapter.excerpts.slice(NUM_PREVIEWS).join("<hr />"),
+            query
+        )}<hr />`;
         const initial = div.innerHTML;
         div.addEventListener("click", (e) => {
             if (e.target === div) toggleFullSearchResult(div, initial, rest);

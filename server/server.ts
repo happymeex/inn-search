@@ -34,7 +34,6 @@ async function searchHandler(
         // data.sort((ch1, ch2) => ch2[1].score - ch1[1].score);
         res.status(StatusCodes.OK).send(data);
     } catch (err) {
-        console.log(err);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).send();
     }
 }
