@@ -4,19 +4,24 @@
     --content-width: 50vw;
     --dark: rgb(33, 35, 42);
     --med: rgb(50, 49, 66);
-    --gold: rgb(255, 217, 1);
+    --gold: rgb(245, 216, 55);
     --serif: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
 }
 
 header {
     background-color: var(--med);
     margin-bottom: 1em;
+    display: flex;
+    align-items: center;
 }
 
 #title {
-    text-align: center;
     margin: 0;
-    padding: 1em 0 0.5em;
+    text-align: center;
+    box-sizing: border-box;
+    padding: 0.7em 1.4em;
+    width: 25vw;
+    font-size: 1.4em;
     color: var(--gold);
     font-family: var(--serif);
     cursor: pointer;
@@ -47,20 +52,19 @@ main {
 
 #search-form {
     width: var(--content-width);
+    display: flex;
+    align-items: center;
 }
 
-#searchbar-holder {
-    display: flex;
-    margin-bottom: 2em;
-}
-#searchbar-holder input {
-    padding: 0.4em 0.8em;
-    width: 80%;
+#search-form input {
+    --height: 3em;
+    padding: 0 1.5em;
+    height: var(--height);
+    border-radius: calc(0.5 * var(--height));
+    border: none;
+    width: 100%;
     background-color: var(--light-grey);
-}
-#searchbar-holder button {
-    width: 20%;
-    cursor: pointer;
+    margin: 1em 0;
 }
 
 hr {
@@ -129,8 +133,13 @@ hr {
 }
 
 #options {
+    width: var(--content-width);
     display: flex;
     justify-content: space-between;
+}
+
+#radio-holder {
+    display: inline-block;
 }
 
 .flex-end {
@@ -140,4 +149,24 @@ hr {
 
 .display-none {
     display: none;
+}
+
+@media (max-width: 900px) {
+    :root {
+        --content-width: 90vw;
+    }
+    header {
+        flex-direction: column;
+    }
+    #title {
+        width: fit-content;
+        font-size: 1.2em;
+    }
+    #search-form input {
+        margin-top: 0;
+    }
+    #options {
+        flex-direction: column;
+        justify-content: flex-start;
+    }
 }

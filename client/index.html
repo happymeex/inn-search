@@ -16,52 +16,51 @@
     <body>
         <header id="header">
             <h1 id="title">Search The Wandering Inn</h1>
+            <form id="search-form">
+                <input
+                    type="text"
+                    id="search-input"
+                    name="input"
+                    required
+                    placeholder=""
+                />
+            </form>
         </header>
         <main>
-            <article>
-                <form id="search-form">
-                    <div id="searchbar-holder">
-                        <input
-                            type="text"
-                            id="search-input"
-                            name="input"
-                            required
-                            placeholder=""
-                        />
-                        <button type="submit">Search</button>
+            <section id="options">
+                <section>
+                    <b> Sort results by: </b>
+                    <div id="radio-holder">
+                        <label>
+                            <input
+                                type="radio"
+                                value="relevance"
+                                checked
+                                name="sortType"
+                            />
+                            Relevance
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                value="earliest"
+                                name="sortType"
+                            />
+                            Earliest
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                value="latest"
+                                name="sortType"
+                            />
+                            Latest
+                        </label>
                     </div>
-                    <section id="options">
-                        <section>
-                            <b> Sort results by: </b>
-                            <label>
-                                <input
-                                    type="radio"
-                                    value="relevance"
-                                    checked
-                                    name="sortType"
-                                />
-                                Relevance
-                            </label>
-                            <label>
-                                <input
-                                    type="radio"
-                                    value="earliest"
-                                    name="sortType"
-                                />
-                                Earliest
-                            </label>
-                            <label>
-                                <input
-                                    type="radio"
-                                    value="latest"
-                                    name="sortType"
-                                />
-                                Latest
-                            </label>
-                        </section>
-                        <span id="num-results"></span>
-                    </section>
-                </form>
+                </section>
+                <span id="num-results"></span>
+            </section>
+            <article>
                 <hr />
                 <div id="page-navigator" class="flex-end">
                     <button id="prev-button" disabled>Previous</button>
