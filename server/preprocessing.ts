@@ -16,7 +16,7 @@ async function loadFiles(
 ): Promise<Array<[ChapterName, URL, Text]>> {
     console.log("loading files...");
     const promises: Promise<Buffer>[] = [];
-    const numChapters = fs.readdirSync(DATA_PATH).length;
+    const numChapters = fs.readdirSync(DATA_PATH).length - 1; // exclude .gitkeep
     console.log("found", numChapters, "chapters");
     if (numChapters === 0 || forceReload) {
         console.log("fetching and writing all chapters to filesys");
