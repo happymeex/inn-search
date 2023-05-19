@@ -19,11 +19,13 @@ export function scoreText(
     text: string,
     searchWords: string[]
 ): { score: number; excerpts: string[] } {
-    const filteredWords = searchWords.filter(
-        (word) =>
-            searchWords.length < SEARCH_LENGTH_TO_TRIGGER_FILLER ||
-            !FILLER.has(word.toLowerCase())
-    );
+    const filteredWords = searchWords
+        .filter(
+            (word) =>
+                searchWords.length < SEARCH_LENGTH_TO_TRIGGER_FILLER ||
+                !FILLER.has(word.toLowerCase())
+        )
+        .filter((word) => word.length > 0);
     const regexes = filteredWords.map((word): [string, RegExp] => [
         word,
         new RegExp(cleanWord(word), `gi`),
