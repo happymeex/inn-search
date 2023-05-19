@@ -262,6 +262,7 @@ hr {
     #title {
         width: fit-content;
         font-size: 1.2em;
+        padding-bottom: 0;
     }
     #search-form input {
         margin-top: 0;
