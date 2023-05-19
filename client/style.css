@@ -56,7 +56,7 @@ main {
     align-items: center;
 }
 
-#search-form input {
+#searchbar-holder {
     --height: 3em;
     padding: 0 1.5em;
     height: var(--height);
@@ -65,6 +65,32 @@ main {
     width: 100%;
     background-color: var(--light-grey);
     margin: 1em 0;
+    display: flex;
+}
+
+#search-icon {
+    width: var(--height);
+    background-color: transparent;
+    border: none;
+    background-image: url("./assets/search_icon.png");
+    background-position: center;
+    cursor: pointer;
+    filter: brightness(1.2);
+}
+
+#search-icon:hover {
+    transition: 0.1s;
+    filter: initial;
+}
+
+#search-input {
+    background-color: transparent;
+    border: none;
+    flex-grow: 1;
+}
+
+#search-input:focus {
+    outline: none;
 }
 
 hr {

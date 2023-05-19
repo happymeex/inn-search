@@ -17,13 +17,16 @@
         <header id="header">
             <h1 id="title">Search The Wandering Inn</h1>
             <form id="search-form">
-                <input
-                    type="text"
-                    id="search-input"
-                    name="input"
-                    required
-                    placeholder=""
-                />
+                <div id="searchbar-holder">
+                    <input
+                        type="search"
+                        id="search-input"
+                        name="input"
+                        required
+                        placeholder=""
+                    />
+                    <button type="submit" id="search-icon"></button>
+                </div>
             </form>
             <button id="about-button" class="text-button">About</button>
         </header>
@@ -121,7 +124,7 @@
                     <li>A few Easter eggs...?</li>
                 </ul>
                 <p>
-                    The souce code is public on Github. If you find any bugs,
+                    The source code is public on Github. If you find any bugs,
                     usability issues, or features you'd like to see, join the
                     <a href="https://discord.com/invite/abwsa3y" target="_blank"
                         >TWI Discord</a
