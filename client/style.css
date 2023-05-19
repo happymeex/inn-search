@@ -273,4 +273,11 @@ hr {
     #modal {
         width: 95%;
     }
+    #about-button {
+        display: none;
+    }
+    .result-singleChapter {
+        padding: 0.4em 0;
+        margin-bottom: 1em;
+    }
 }
