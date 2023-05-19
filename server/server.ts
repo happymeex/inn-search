@@ -1,9 +1,7 @@
 import express from "express";
 import path from "path";
 import { search } from "./search";
-import { writeAll, writeUpdate } from "./webScrape";
 import { StatusCodes } from "http-status-codes";
-import { SearchParams } from "./score";
 import { Request, Response } from "express";
 import { resetText } from "./preprocessing";
 

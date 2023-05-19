@@ -6,11 +6,10 @@
         <meta name="viewport" content="width=device-width" />
         <script src="index.js" type="module"></script>
         <link rel="stylesheet" href="style.css" />
-        <link rel="stylesheet" href="paging.css" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap"
             rel="stylesheet"
         />
     </head>
@@ -26,6 +25,7 @@
                     placeholder=""
                 />
             </form>
+            <button id="about-button" class="text-button">About</button>
         </header>
         <main>
             <section id="options">
@@ -64,17 +64,71 @@
             <article>
                 <hr />
                 <div id="page-navigator" class="flex-end">
-                    <button id="prev-button" disabled>Previous</button>
-                    <button id="next-button" disabled>Next</button>
+                    <button id="prev-button" class="text-button" disabled>
+                        Previous
+                    </button>
+                    <button id="next-button" class="text-button" disabled>
+                        Next
+                    </button>
                 </div>
                 <article id="results-holder"></article>
                 <div id="back-to-top-holder" class="display-none flex-end">
-                    <button>Back to top</button>
+                    <button class="text-button">Back to top</button>
                 </div>
             </article>
         </main>
         <div id="no-results" class="display-none">
             No results found. Check the incantation?
+        </div>
+        <div id="modal-background" class="invisible">
+            <article id="modal">
+                <h1>About</h1>
+                <p>
+                    This is a search website for ✨<a
+                        href="https://wanderinginn.com"
+                        target="_blank"
+                        >The Wandering Inn</a
+                    >✨, a great fantasy LitRPG webnovel. It's got memorable
+                    characters, expansive worldbuilding, and a gripping story
+                    full of magic and monsters. You should check it out!
+                </p>
+                <p>
+                    I started developing this site while the webnovel's own
+                    search function was broken. It has since been fixed, but I
+                    figured I could improve the UI/UX so I built this site
+                    anyways. Here are some features:
+                </p>
+                <ul>
+                    <li>
+                        Each search result
+                        <b>shows excerpts containing highlighted keywords</b>.
+                        For chapters with more than three excerpts, you can
+                        click to expand the result box and see all occurrences
+                        in that chapter.
+                    </li>
+                    <li>
+                        You can <b>sort the search results</b> by relevance or
+                        by chronology. Be careful sorting by "Latest" if you
+                        want to avoid spoilers!
+                    </li>
+                    <li>
+                        As is usual for search functions, you can wrap a phrase
+                        in quotes to search for that phrase as a whole rather
+                        than its constituent keywords. I might add other search
+                        features like specifying required keywords if users
+                        express interest.
+                    </li>
+                    <li>A few Easter eggs...?</li>
+                </ul>
+                <p>
+                    The souce code is public on Github. If you find any bugs,
+                    usability issues, or features you'd like to see, join the
+                    <a href="https://discord.com/invite/abwsa3y" target="_blank"
+                        >TWI Discord</a
+                    >
+                    and ping me @rocketscience.
+                </p>
+            </article>
         </div>
     </body>
 </html>

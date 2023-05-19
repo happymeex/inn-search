@@ -24,6 +24,8 @@ const noResults = document.querySelector("#no-results");
 const backToTop = document.querySelector("#back-to-top-holder");
 let query = undefined; // track current array of search keywords
 const title = document.querySelector("#title");
+const aboutButton = document.querySelector("#about-button");
+const modalBackground = document.querySelector("#modal-background");
 
 window.addEventListener("popstate", handleHistory);
 
@@ -36,6 +38,13 @@ title.addEventListener("click", () => {
     clearSearchResults();
     searchInput.value = "";
     history.pushState({ input: undefined }, "");
+});
+aboutButton.addEventListener("click", () => {
+    modalBackground.classList.add("visible");
+});
+modalBackground.addEventListener("click", (e) => {
+    if (e.target === modalBackground)
+        modalBackground.classList.remove("visible");
 });
 
 /**

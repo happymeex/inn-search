@@ -151,6 +151,81 @@ hr {
     display: none;
 }
 
+#page-navigator {
+    gap: 0.3em;
+}
+
+#back-to-top-holder {
+    margin-bottom: 2em;
+}
+
+.text-button {
+    color: var(--gold);
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.text-button:hover {
+    filter: brightness(0.85);
+    transition: 0.2s;
+}
+
+.text-button:disabled {
+    cursor: initial;
+    filter: brightness(0.6);
+}
+
+#modal-background {
+    position: fixed;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    backdrop-filter: brightness(0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.invisible {
+    visibility: hidden;
+    transition: 0.3s;
+    opacity: 0;
+}
+
+#modal {
+    width: 60vw;
+    height: 70vh;
+    background-color: rgb(55, 58, 68);
+    border-radius: 0.5em;
+    box-sizing: border-box;
+    padding: 0 1.5em;
+    overflow-y: auto;
+}
+
+#modal-background.visible {
+    visibility: visible;
+    opacity: 100%;
+}
+
+#modal h1 {
+    text-align: center;
+    font-weight: 900;
+}
+
+#modal a {
+    font-weight: 900;
+    color: var(--gold);
+}
+
+#modal b {
+    font-weight: 900;
+}
+
+#about-button {
+    margin-left: 2em;
+}
+
 @media (max-width: 900px) {
     :root {
         --content-width: 90vw;
@@ -168,5 +243,8 @@ hr {
     #options {
         flex-direction: column;
         justify-content: flex-start;
+    }
+    #modal {
+        width: 95%;
     }
 }
