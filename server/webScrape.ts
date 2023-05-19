@@ -6,7 +6,8 @@ import { ChapterName, URL, Text } from "./types";
 
 const TABLE_OF_CONTENTS = "https://wanderinginn.com/table-of-contents/";
 const URL_BASE = "https://wanderinginn.com";
-const ignore = ["/vol-1-archive", "/contacts/"];
+export const PARAGRAPH_DELIMITER = "\n\n";
+const IGNORE_URLS = ["/vol-1-archive", "/contacts/"];
 
 /**
  * Fetches and writes all chapters to files of the form data/i.txt
@@ -139,7 +140,7 @@ async function chapterToURL(): Promise<Array<[ChapterName, URL]>> {
     const ret: Array<[string, string]> = [];
     matches.forEach((match) => {
         assert(match[1] && match[2]);
-        if (ignore.includes(match[1])) return;
+        if (IGNORE_URLS.includes(match[1])) return;
         ret.push([match[2], match[1]]);
     });
     return ret;
@@ -183,7 +184,7 @@ function extractText(rawHTML: string): Text {
             assert(match[1]);
             return match[1];
         })
-        .join("\n\n");
+        .join(PARAGRAPH_DELIMITER);
 }
 
 function wait(msec: number): Promise<void> {

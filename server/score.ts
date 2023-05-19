@@ -1,4 +1,6 @@
 import assert from "assert";
+import { ExcerptExtractor } from "./ExcerptExtractor";
+import { PARAGRAPH_DELIMITER } from "./webScrape";
 
 export type SearchParams = {
     caseSensitive: boolean;
@@ -61,95 +63,21 @@ export function scoreText(
     // proximity multiplier
     score *= proximityMultiplier([...indices.values()]);
 
-    // gather exerpts
-
-    /**
-     * @param index index of the character
-     * @returns object whose `right` field is the first index of the subsequent paragraph
-     */
-    function getParagraph(index: number): {
-        left: number;
-        right: number;
-        text: string;
-    } {
-        let leftIndex = index;
-        let rightIndex = index;
-        while (
-            leftIndex > 0 &&
-            !(text[leftIndex - 1] === "\n" && text[leftIndex - 2] === "\n")
-        ) {
-            leftIndex--;
-        }
-        while (
-            rightIndex < text.length - 1 &&
-            !(text[rightIndex] === "\n" && text[rightIndex + 1] === "\n")
-        ) {
-            rightIndex++;
-        }
-        return {
-            left: leftIndex,
-            right: Math.min(rightIndex + 2, text.length),
-            text: text.slice(leftIndex, rightIndex),
-        };
-    }
+    // gather excerpts
 
     const allIndices: number[] = [];
     for (const indexArr of indices.values()) allIndices.push(...indexArr);
-    const excerptIndices = getExcerpts(allIndices, EXCERPT_RADIUS);
-    const excerpts: Array<[string, number]> = [];
-    for (const cluster of excerptIndices) {
-        let clusterText = "";
-        let rightMost = 0; // tracks the first index after the most recently added paragraph
-        let numHits = 0; // tracks number of indices of the cluster we've seen so far
-        for (const index of cluster) {
-            if (index >= rightMost) {
-                let r = rightMost === 0 ? index : rightMost;
-                while (r <= index) {
-                    const { left, right, text } = getParagraph(r);
-                    clusterText += `<p>${text}</p>`;
-                    r = right;
-                }
-                rightMost = r;
-            }
-            numHits++;
-        }
-        if (numHits > 0) {
-            excerpts.push([clusterText, numHits]);
-        }
-    }
+    const excerpts = new ExcerptExtractor(
+        text,
+        allIndices,
+        EXCERPT_RADIUS,
+        PARAGRAPH_DELIMITER
+    ).getExcerpts();
 
     return {
         score,
-        excerpts: excerpts.map((item) => item[0]),
+        excerpts,
     };
-}
-
-/**
- * Partitions array into sorted clusters whose consecutive elements
- * differ by at most `distance`
- *
- * @param allIndices array of numbers
- * @returns array of clusters
- */
-function getExcerpts(allIndices: number[], distance: number): Array<number[]> {
-    const ret: Array<number[]> = [];
-    allIndices.sort();
-    let firstInCluster = 0;
-    for (let i = 0; i < allIndices.length; i++) {
-        const curr = allIndices[i];
-        const next = allIndices[i + 1];
-        if (next !== undefined) {
-            assert(curr !== undefined);
-            if (next > curr + distance) {
-                ret.push(allIndices.slice(firstInCluster, i + 1));
-                firstInCluster = i + 1;
-            }
-        } else {
-            // reached the end of the array
-            ret.push(allIndices.slice(firstInCluster));
-        }
-    }
-    return ret;
 }
 
 /**

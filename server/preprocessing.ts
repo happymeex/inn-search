@@ -20,7 +20,7 @@ async function loadFiles(
     console.log("found", numChapters, "chapters");
     if (numChapters === 0 || forceReload) {
         console.log("fetching and writing all chapters to filesys");
-        await writeAll(20, 5, 280);
+        await writeAll(20, 5);
     }
     for (let i = 0; i < numChapters; i++) {
         promises.push(
