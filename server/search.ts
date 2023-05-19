@@ -11,11 +11,10 @@ import { ChapterName, URL, ChapterSearchData } from "./types";
  *      of a score and a list of excerpts
  */
 export async function search(
-    searchWords: string[],
-    searchParams: SearchParams
+    searchWords: string[]
 ): Promise<Array<ChapterSearchData>> {
     const numChapters = (await ALL_TEXT_PROMISE).length;
-    const ret = parseChapters(0, numChapters, searchWords, searchParams);
+    const ret = parseChapters(0, numChapters, searchWords);
     return ret;
 }
 
@@ -32,8 +31,7 @@ export async function search(
 export async function parseChapters(
     start: number,
     numChapters: number,
-    searchWords: string[],
-    searchParams: SearchParams
+    searchWords: string[]
 ): Promise<Array<ChapterSearchData>> {
     const allText = await ALL_TEXT_PROMISE;
     const data: Array<ChapterSearchData> = [];
@@ -41,11 +39,7 @@ export async function parseChapters(
         const chapter = allText[start + i];
         if (chapter) {
             const [name, url, text] = chapter;
-            const { score, excerpts } = scoreText(
-                text,
-                searchWords,
-                searchParams
-            );
+            const { score, excerpts } = scoreText(text, searchWords);
             data.push({ name, url, score, excerpts });
         }
     }

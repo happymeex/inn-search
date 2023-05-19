@@ -17,8 +17,7 @@ export type SearchParams = {
  */
 export function scoreText(
     text: string,
-    searchWords: string[],
-    searchParams: SearchParams
+    searchWords: string[]
 ): { score: number; excerpts: string[] } {
     const filteredWords = searchWords.filter(
         (word) =>
@@ -27,10 +26,7 @@ export function scoreText(
     );
     const regexes = filteredWords.map((word): [string, RegExp] => [
         word,
-        new RegExp(
-            cleanWord(word),
-            `g${searchParams.caseSensitive ? "" : "i"}`
-        ),
+        new RegExp(cleanWord(word), `gi`),
     ]);
 
     let numMatches = 0;

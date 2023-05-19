@@ -17,7 +17,6 @@ app.get("/", (req, res) => {
 
 type SearchRequest = {
     query: string;
-    caseSensitive: string;
 };
 
 async function searchHandler(
@@ -25,13 +24,9 @@ async function searchHandler(
     res: Response
 ) {
     const query = req.query.query;
-    const caseSensitive = req.query.caseSensitive === "true";
     try {
-        const allData = await search(query.split(","), {
-            caseSensitive: caseSensitive,
-        });
+        const allData = await search(query.split(","));
         const data = allData.filter((ch) => ch.score > 0);
-        // data.sort((ch1, ch2) => ch2[1].score - ch1[1].score);
         res.status(StatusCodes.OK).send(data);
     } catch (err) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).send();

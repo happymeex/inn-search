@@ -10,13 +10,15 @@ export const PARAGRAPH_DELIMITER = "\n\n";
 const IGNORE_URLS = ["/vol-1-archive", "/contacts/"];
 
 /**
- * Fetches and writes all chapters to files of the form data/i.txt
+ * Fetches and writes all chapters to files of the form `DATA_PATH/i.txt`.
+ * Executes in batches, since fetching all chapters concurrently runs into 429 error
+ * too many requests.
  *
- * @param rateLimit maximum number of chapters to handle at a time
- * @param pauseTime minutes to pause between batches of requests
+ * @param rateLimit maximum number of chapters to handle at a time, default 1000
+ * @param pauseTime minutes to pause between batches of requests, default 0
  */
 export async function writeAll(
-    rateLimit = 10000,
+    rateLimit = 1000,
     pauseTime = 0,
     start = 0
 ): Promise<void> {
@@ -25,7 +27,6 @@ export async function writeAll(
     const chapterURLs: URL[] = [];
     const promises: Promise<Text>[] = [];
 
-    /** can't do this all concurrently; run into 429 too many requests */
     for (const [i, [chapterName, url]] of urls.entries()) {
         if (i < start) continue;
         console.log("starting chapter", i);
@@ -179,12 +180,25 @@ async function fetchChapter(url: URL): Promise<Text> {
 function extractText(rawHTML: string): Text {
     const regex = new RegExp(/<p>(.*?)<\/p>/, "sg");
     const m = [...rawHTML.matchAll(regex)];
-    return m
+    const rawText = m
         .map((match) => {
             assert(match[1]);
             return match[1];
         })
         .join(PARAGRAPH_DELIMITER);
+    return sanitizeText(rawText);
+}
+
+function sanitizeText(text: string): string {
+    // match "Previous Chapter" and "Next Chapter" buttons
+    const regex = /<a href=.*?>.*?Chapter.*?<\/a>/g;
+    return text
+        .replaceAll(regex, "")
+        .replaceAll(`\u2018`, "'")
+        .replaceAll(`\u2019`, "'")
+        .replaceAll(`\u201c`, `"`)
+        .replaceAll(`\u201d`, `"`)
+        .replaceAll(`\u2026`, "...");
 }
 
 function wait(msec: number): Promise<void> {
