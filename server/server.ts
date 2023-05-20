@@ -100,7 +100,8 @@ async function handleAdminTasks(
  * one for each chapter with positive score (i.e. at least one occurrence of some
  * keyword in that chapter), sorted chronologically (earliest to latest)
  *
- * If the search query is too long or has too many keywords, responds with status code BAD_REQUEST.
+ * If the search query is too long (more than 200 characters including separating commas),
+ * responds with status code BAD_REQUEST.
  * If the server otherwise errors during the computation, responds with status code INTERNAL_SERVER ERROR
  */
 app.get("/search", searchHandler);

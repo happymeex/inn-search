@@ -2,7 +2,7 @@ import { SearchParams, scoreText } from "./score";
 import { ALL_TEXT_PROMISE } from "./preprocessing";
 import { ChapterName, URL, ChapterSearchData } from "./types";
 
-const MAX_SEARCH_WORDS = 16;
+/** Upper bound on allowable query length (separating commas included) */
 const MAX_LENGTH = 200;
 
 /**
@@ -23,7 +23,7 @@ export async function search(
                 !FILLER.has(word.toLowerCase())
         )
         .filter((word) => word.length > 0);
-    if (query.length > MAX_LENGTH || filteredWords.length > MAX_SEARCH_WORDS) {
+    if (query.length > MAX_LENGTH) {
         return undefined;
     }
     const numChapters = (await ALL_TEXT_PROMISE).length;
