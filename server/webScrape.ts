@@ -58,7 +58,7 @@ export async function writeUpdate(): Promise<void> {
     const promise = chapterToURL();
     const currText = await ALL_TEXT_PROMISE;
     const urls = new Map(await promise);
-    for (const [i, [chapterName, text]] of currText.entries()) {
+    for (const [i, [chapterName, url, text]] of currText.entries()) {
         // patch missing chapters
         if (text.length === 0) {
             console.log("patching missing chapter:", chapterName);
@@ -154,7 +154,6 @@ async function chapterToURL(): Promise<Array<[ChapterName, URL]>> {
  *      paragraphs separated by double newlines
  */
 async function fetchChapter(url: URL): Promise<Text> {
-    console.log("looking at url:", url);
     const regex = new RegExp(
         /<div[\s]+class[\s]*=[\s]*"entry-content">(.*?)<\/div>/,
         "s"
