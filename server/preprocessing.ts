@@ -3,8 +3,8 @@ import path from "path";
 import { URL, ChapterName, Text } from "./types";
 import assert from "assert";
 
-const RATE_LIMIT = 20;
-const PAUSE_TIME = 5;
+const BATCH_SIZE = 6;
+const PAUSE_TIME = 3;
 const TABLE_OF_CONTENTS = "https://wanderinginn.com/table-of-contents/";
 const URL_BASE = "https://wanderinginn.com";
 export const PARAGRAPH_DELIMITER = "\n\n";
@@ -21,7 +21,7 @@ async function loadFiles(
     console.log("found", numChapters, "chapters");
     if (numChapters === 0 || forceReload) {
         console.log("fetching and writing all chapters to filesys");
-        await writeAll(RATE_LIMIT, PAUSE_TIME);
+        await writeAll(BATCH_SIZE, PAUSE_TIME);
     }
     numChapters = fs.readdirSync(DATA_PATH).length - 1;
     for (let i = 0; i < numChapters; i++) {
@@ -219,9 +219,12 @@ async function fetchChapter(url: URL): Promise<Text> {
         const rawHTML = await res.text();
         const match = rawHTML.match(regex);
         if (!match || !match[1]) {
-            throw new Error(
-                `failed to get content div\nraw html: ${rawHTML.slice(0, 300)}`
-            );
+            if (rawHTML.includes("429 Too Many Requests")) {
+                throw new Error("429 Too Many Requests");
+            } else
+                throw new Error(
+                    `Unexpected chapter html: ${rawHTML.slice(0, 300)}...`
+                );
         }
         return extractText(match[1]);
     } catch (err) {

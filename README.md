@@ -26,8 +26,10 @@ is a string of your choosing.
 Run `npm start` to compile and start the server.
 If the server has not already fetched the webnovel text and written it to disk, it will do so.
 This should take a few hours; the console will notify you when it is finished.
-(It fetches in batches of 20 every 5 minutes to avoid a 429 response from
-the TWI web server. You can adjust these parameters by playing with the constants in `server/preprocessing.ts`.)
+(It fetches in batches of 6 every 3 minutes to avoid a 429 response from
+the TWI web server. You can adjust these parameters by playing with the constants in `server/preprocessing.ts`.
+Interestingly, my local build could fetch batches of 20 every 5 minutes without incurring 429,
+but the deployment could not.)
 Subsequent server starts bypass the webscraping step and instead load the data into memory by reading
 from disk.
 
