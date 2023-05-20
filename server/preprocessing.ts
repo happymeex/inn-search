@@ -3,8 +3,8 @@ import path from "path";
 import { URL, ChapterName, Text } from "./types";
 import assert from "assert";
 
-const BATCH_SIZE = 6;
-const PAUSE_TIME = 3;
+const BATCH_SIZE = 8;
+const PAUSE_TIME = 2;
 const TABLE_OF_CONTENTS = "https://wanderinginn.com/table-of-contents/";
 const URL_BASE = "https://wanderinginn.com";
 export const PARAGRAPH_DELIMITER = "\n\n";
