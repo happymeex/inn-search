@@ -12,21 +12,13 @@ export type SearchParams = {
  * Higher score indicates greater precedence in search ranking.
  *
  * @param text chapter text
- * @param searchWords array of search words
- * @param searchParams options
+ * @param seaerchWords array of nonempty search words
  */
 export function scoreText(
     text: string,
     searchWords: string[]
 ): { score: number; excerpts: string[] } {
-    const filteredWords = searchWords
-        .filter(
-            (word) =>
-                searchWords.length < SEARCH_LENGTH_TO_TRIGGER_FILLER ||
-                !FILLER.has(word.toLowerCase())
-        )
-        .filter((word) => word.length > 0);
-    const regexes = filteredWords.map((word): [string, RegExp] => [
+    const regexes = searchWords.map((word): [string, RegExp] => [
         word,
         new RegExp(cleanWord(word), `gi`),
     ]);
@@ -34,7 +26,7 @@ export function scoreText(
     let numMatches = 0;
     // maps search words to set of indices
     const indices = new Map<string, number[]>(
-        filteredWords.map((word) => [word, []])
+        searchWords.map((word) => [word, []])
     );
     // maps search words to number of matches
     const matchFreqs = new Map<string, number>();

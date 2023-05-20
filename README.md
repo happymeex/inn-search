@@ -35,7 +35,7 @@ To see the frontend, visit `https://localhost:3000/` in your browser.
 If you make changes to the client, run `npm run copy` before visiting the site again.
 
 While the server is running, you can issue admin commands:
-To reset the server to refetch and update its copy of the text data, make a GET request (e.g. using your browser) to
+To make the server to refetch and update its copy of the text data, make a GET request (e.g. using your browser) to
 
 ```
 https://localhost:3000/admin?password=[password]&command=reset

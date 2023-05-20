@@ -52,7 +52,11 @@ async function searchHandler(
     if (isResetting(res)) return;
     const query = req.query.query;
     try {
-        const allData = await search(query.split(","));
+        const allData = await search(query);
+        if (allData === undefined) {
+            res.status(StatusCodes.BAD_REQUEST).send("query is too large!");
+            return;
+        }
         const data = allData.filter((ch) => ch.score > 0);
         res.status(StatusCodes.OK).send(data);
     } catch (err) {
@@ -96,7 +100,8 @@ async function handleAdminTasks(
  * one for each chapter with positive score (i.e. at least one occurrence of some
  * keyword in that chapter), sorted chronologically (earliest to latest)
  *
- * If the server errors during the computation, responds with status code INTERNAL_SERVER ERROR
+ * If the search query is too long or has too many keywords, responds with status code BAD_REQUEST.
+ * If the server otherwise errors during the computation, responds with status code INTERNAL_SERVER ERROR
  */
 app.get("/search", searchHandler);
 

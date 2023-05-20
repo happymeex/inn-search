@@ -2,19 +2,32 @@ import { SearchParams, scoreText } from "./score";
 import { ALL_TEXT_PROMISE } from "./preprocessing";
 import { ChapterName, URL, ChapterSearchData } from "./types";
 
+const MAX_SEARCH_WORDS = 16;
+const MAX_LENGTH = 200;
+
 /**
  * Search all chapters currently stored in the file system.
  *
- * @param rawSearch list of search words
- * @param searchParams search parameters
- * @returns a list of pairs [chapterName, chapterData] where the data consists
- *      of a score and a list of excerpts
+ * @param rawSearch raw search query input; comma-separated list of keywords
+ * @returns a list of search results, or undefined if the search query exceeds
+ *      the size limits on the number of words or query length.
  */
 export async function search(
-    searchWords: string[]
-): Promise<Array<ChapterSearchData>> {
+    query: string
+): Promise<Array<ChapterSearchData> | undefined> {
+    const searchWords = query.split(",");
+    const filteredWords = searchWords
+        .filter(
+            (word) =>
+                searchWords.length < SEARCH_LENGTH_TO_TRIGGER_FILLER ||
+                !FILLER.has(word.toLowerCase())
+        )
+        .filter((word) => word.length > 0);
+    if (query.length > MAX_LENGTH || filteredWords.length > MAX_SEARCH_WORDS) {
+        return undefined;
+    }
     const numChapters = (await ALL_TEXT_PROMISE).length;
-    const ret = parseChapters(0, numChapters, searchWords);
+    const ret = parseChapters(0, numChapters, filteredWords);
     return ret;
 }
 
@@ -24,9 +37,7 @@ export async function search(
  * @param start index of chapter to begin search
  * @param numChapters number of chapters to search
  * @param searchWords list of search words
- * @param searchParams search parameters
- * @returns a list of pairs [chapterName, chapterData] where the data consists
- *      of a score and a list of excerpts
+ * @returns a list of search results for the `numChapters` chapters starting at chapter `start`
  */
 export async function parseChapters(
     start: number,
@@ -45,3 +56,37 @@ export async function parseChapters(
     }
     return data;
 }
+
+const SEARCH_LENGTH_TO_TRIGGER_FILLER = 3;
+const FILLER = new Set([
+    "a",
+    "an",
+    "and",
+    "at",
+    "be",
+    "by",
+    "did",
+    "do",
+    "does",
+    "for",
+    "go",
+    "goes",
+    "if",
+    "in",
+    "is",
+    "it",
+    "the",
+    "to",
+    "that",
+    "was",
+    "what",
+    "then",
+    "than",
+    "not",
+    "ok",
+    "from",
+    "isn't",
+    "has",
+    "have",
+    "get",
+]);
