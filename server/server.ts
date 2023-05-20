@@ -67,24 +67,28 @@ async function handleAdminTasks(
     res: Response
 ) {
     if (isResetting(res)) return;
-    if (req.query.password === process.env.ADMIN_KEY) {
-        console.log("admin access granted");
-        switch (req.query.command) {
-            case "reset":
-                resettingText = true;
-                resetText(true);
-                ALL_TEXT_PROMISE.then(() => (resettingText = false));
-                break;
-            case "update":
-                resettingText = true;
-                writeUpdate().then(() => (resettingText = false));
-                break;
-            default:
-                res.status(StatusCodes.BAD_REQUEST).send();
-                return;
-        }
-        res.status(StatusCodes.OK).send();
-    } else res.status(StatusCodes.UNAUTHORIZED).send();
+    try {
+        if (req.query.password === process.env.ADMIN_KEY) {
+            console.log("admin access granted");
+            switch (req.query.command) {
+                case "reset":
+                    resettingText = true;
+                    resetText(true);
+                    ALL_TEXT_PROMISE.then(() => (resettingText = false));
+                    break;
+                case "update":
+                    resettingText = true;
+                    writeUpdate().then(() => (resettingText = false));
+                    break;
+                default:
+                    res.status(StatusCodes.BAD_REQUEST).send();
+                    return;
+            }
+            res.status(StatusCodes.OK).send();
+        } else res.status(StatusCodes.UNAUTHORIZED).send();
+    } catch (err) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(String(err));
+    }
 }
 
 /**
