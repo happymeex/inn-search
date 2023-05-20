@@ -4,6 +4,7 @@
     --content-width: 50vw;
     --dark: rgb(33, 35, 42);
     --med: rgb(50, 49, 66);
+    --light: rgb(55, 58, 68);
     --gold: rgb(245, 216, 55);
     --serif: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
 }
@@ -114,7 +115,7 @@ hr {
 }
 
 #results-holder hr:not(:last-child) {
-    width: calc(0.95 * var(--content-width));
+    width: var(--content-width);
     filter: brightness(0.7);
 }
 
@@ -219,10 +220,28 @@ hr {
     opacity: 0;
 }
 
+#level-popup {
+    position: fixed;
+    width: fit-content;
+    bottom: 3em;
+    right: 3em;
+    max-width: 20vw;
+    background-color: var(--light);
+    border-radius: 0.3em;
+    padding: 0 1em;
+    box-sizing: border-box;
+}
+
+#level-popup.visible {
+    opacity: 100%;
+    visibility: visible;
+}
+
 #modal {
     width: 60vw;
-    height: 70vh;
-    background-color: rgb(55, 58, 68);
+    height: fit-content;
+    max-height: 70vh;
+    background-color: var(--light);
     border-radius: 0.5em;
     box-sizing: border-box;
     padding: 0 1.5em;

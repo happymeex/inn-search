@@ -90,9 +90,45 @@ function handleEasterEgg() {
     if (numSearches === null) {
         numSearches = 0;
     } else numSearches = parseInt(numSearches);
-    console.log(numSearches + 1, "searches now");
     localStorage.setItem("numSearches", (numSearches + 1).toString());
+    const level = numSearchesToLevel.get(numSearches + 1);
+    if (level !== undefined) {
+        let message = "";
+        if (level === 1) {
+            message = `<p>[Searcher Class Obtained!]</p>`;
+        }
+        message += `<p>[Searcher Level ${level}!]</p>`;
+        displayBottomRightPopup(message);
+    }
 }
+
+const popup = document.querySelector("#level-popup");
+
+/**
+ * Displays a popup in the bottom right corner of the screen, containing
+ * `message` as innerHTML. The popup fades in, stays for 3.5 seconds, and fades out.
+ *
+ * @param {number} message HTML-formatted message to display
+ */
+function displayBottomRightPopup(message) {
+    popup.innerHTML = message;
+    popup.classList.add("visible");
+    setTimeout(() => {
+        popup.classList.remove("visible");
+    }, 3500);
+}
+
+const numSearchesToLevel = new Map([
+    [1, 1],
+    [10, 5],
+    [30, 10],
+    [60, 20],
+    [120, 30],
+    [240, 40],
+    [480, 50],
+    [960, 60],
+    [1920, 70],
+]);
 
 export {
     parseSearch,
