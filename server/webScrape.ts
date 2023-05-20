@@ -47,6 +47,7 @@ export async function writeAll(
             promises.length = 0;
         }
     }
+    console.log("finished fetching and writing all chapters");
 }
 
 /**

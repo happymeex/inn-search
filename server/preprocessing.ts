@@ -11,6 +11,9 @@ export const DATA_PATH = path.resolve(__dirname, "..", "..", "data");
 export let ALL_TEXT_PROMISE: Promise<Array<[ChapterName, URL, Text]>> =
     loadFiles();
 
+const RATE_LIMIT = 20;
+const PAUSE_TIME = 5;
+
 async function loadFiles(
     forceReload = false
 ): Promise<Array<[ChapterName, URL, Text]>> {
@@ -20,7 +23,7 @@ async function loadFiles(
     console.log("found", numChapters, "chapters");
     if (numChapters === 0 || forceReload) {
         console.log("fetching and writing all chapters to filesys");
-        await writeAll(20, 5);
+        await writeAll(RATE_LIMIT, PAUSE_TIME);
     }
     for (let i = 0; i < numChapters; i++) {
         promises.push(
