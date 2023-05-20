@@ -3,6 +3,9 @@ import path from "path";
 import { writeAll } from "./webScrape";
 import { URL, ChapterName, Text } from "./types";
 
+const RATE_LIMIT = 20;
+const PAUSE_TIME = 5;
+
 export const DATA_PATH = path.resolve(__dirname, "..", "..", "data");
 /**
  * Promise to an array whose elements take the form [chapterName, url, text],
@@ -10,9 +13,6 @@ export const DATA_PATH = path.resolve(__dirname, "..", "..", "data");
  */
 export let ALL_TEXT_PROMISE: Promise<Array<[ChapterName, URL, Text]>> =
     loadFiles();
-
-const RATE_LIMIT = 20;
-const PAUSE_TIME = 5;
 
 async function loadFiles(
     forceReload = false

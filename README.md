@@ -1,6 +1,6 @@
 # Search The Wandering Inn
 
-This is a search website for ✨**[The Wandering Inn]("https://wanderinginn.com")**✨,
+This is a search website for ✨[The Wandering Inn]("https://wanderinginn.com")✨,
 a great fantasy LitRPG webnovel. It's got memorable characters, expansive worldbuilding, and a gripping story
 full of magic and monsters. You should check it out!
 
