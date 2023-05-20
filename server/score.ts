@@ -1,6 +1,6 @@
 import assert from "assert";
 import { ExcerptExtractor } from "./ExcerptExtractor";
-import { PARAGRAPH_DELIMITER } from "./webScrape";
+import { PARAGRAPH_DELIMITER } from "./preprocessing";
 
 export type SearchParams = {
     caseSensitive: boolean;

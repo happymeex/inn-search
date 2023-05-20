@@ -3,14 +3,12 @@ import path from "path";
 import { search } from "./search";
 import { StatusCodes } from "http-status-codes";
 import { Request, Response } from "express";
-import { resetText, ALL_TEXT_PROMISE } from "./preprocessing";
-import { writeUpdate } from "./webScrape";
+import { writeUpdate, resetText, ALL_TEXT_PROMISE } from "./preprocessing";
 import * as dotenv from "dotenv";
 
-const PORT = 3000;
-let resettingText = false; // true whenever server is fetching/writing data to disk
-
 dotenv.config();
+const PORT = process.env.PORT ?? 3000;
+let resettingText = false; // true whenever server is fetching/writing data to disk
 
 const app = express();
 
