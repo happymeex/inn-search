@@ -300,4 +300,11 @@ hr {
         padding: 0.4em 0;
         margin-bottom: 1em;
     }
+    #level-popup {
+        --width: 95vw;
+        width: var(--width);
+        max-width: initial;
+        right: calc(0.5 * (100vw - var(--width)));
+        bottom: 1em;
+    }
 }
