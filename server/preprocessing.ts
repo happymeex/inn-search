@@ -219,11 +219,13 @@ async function fetchChapter(url: URL): Promise<Text> {
         const rawHTML = await res.text();
         const match = rawHTML.match(regex);
         if (!match || !match[1]) {
-            throw new Error(`failed to get content div`);
+            throw new Error(
+                `failed to get content div\nraw html: ${rawHTML.slice(0, 300)}`
+            );
         }
         return extractText(match[1]);
     } catch (err) {
-        console.log("errored on:", url, err);
+        console.log("errored on:", url, String(err));
         return "";
     }
 }
