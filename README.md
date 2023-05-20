@@ -13,8 +13,6 @@ anyways. Here are some features:
 -   Sorting search results by relevance or by chronology
 -   A few Easter eggs...?
 
-I am going to try to deploy this soon.
-
 ## Development
 
 This repository contains the source code for both the web client and the server.
