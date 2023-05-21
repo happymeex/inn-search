@@ -112,6 +112,10 @@ hr {
     font-size: 1.5em;
 }
 
+#message-holder.display-none {
+    display: none;
+}
+
 #results-holder hr {
     filter: brightness(0.7);
 }
