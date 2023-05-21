@@ -102,7 +102,9 @@ hr {
     border-top: 1px solid var(--med-grey);
 }
 
-#no-results {
+#message-holder {
+    display: flex;
+    justify-content: center;
     text-align: center;
     font-family: var(--serif);
     margin-top: 2em;
@@ -269,6 +271,16 @@ hr {
 
 #about-button {
     margin-left: 2em;
+}
+
+#loader {
+    background-image: url("./assets/loader.svg");
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 4em;
+    width: 4em;
+    filter: brightness(0.8);
 }
 
 @media (max-width: 900px) {

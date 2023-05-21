@@ -20,7 +20,7 @@ const prevButton = document.querySelector("#prev-button");
 let prevClickHandler;
 const nextButton = document.querySelector("#next-button");
 let nextClickHandler;
-const noResults = document.querySelector("#no-results");
+const messageHolder = document.querySelector("#message-holder");
 const backToTop = document.querySelector("#back-to-top-holder");
 let query = undefined; // track current array of search keywords
 const title = document.querySelector("#title");
@@ -54,14 +54,11 @@ modalBackground.addEventListener("click", (e) => {
  * @param {string} input
  */
 async function handleSearch(input) {
+    displayMessageDiv(messageHolder, `<div id="loader"></div>`); // loading...
     query = parseSearch(input);
-    console.log("querying:", query);
     const qParams = formatParams({ query });
     const res = await fetch(`/search?${qParams}`);
-    if (res.status === 500) {
-        displayMessageDiv(noResults, "Server error!");
-        return;
-    }
+    if (!isOK(res.status)) return;
     const data = JSON.parse(await res.text());
     data.forEach((ch, i) => {
         ch.index = i;
@@ -117,7 +114,7 @@ function displayResults(data, sort = true, page = 0) {
     };
     clearSearchResults();
     if (numPages === 0) {
-        displayMessageDiv(noResults, NO_RESULTS_MESSAGE);
+        displayMessageDiv(messageHolder, NO_RESULTS_MESSAGE);
         return;
     }
     data.slice(page * RESULTS_PER_PAGE, (page + 1) * RESULTS_PER_PAGE).forEach(
@@ -191,7 +188,7 @@ function toggleFullSearchResult(div, initial, rest) {
  */
 function clearSearchResults() {
     backToTop.classList.add("display-none");
-    noResults.classList.add("display-none");
+    messageHolder.classList.add("display-none");
     while (resultsHolder.lastElementChild) {
         resultsHolder.lastElementChild.remove();
     }
@@ -237,6 +234,32 @@ function makePageHandler(condition, page) {
             displayResultCount(data.length);
         }
     };
+}
+
+/**
+ * Checks whether the given status code is OK (200) and displays an appropriate
+ * message in the UI if not
+ *
+ * @param {number} statusCode status code of search response
+ * @returns {boolean} true if `statusCode` is 200, false otherwise
+ */
+function isOK(statusCode) {
+    let message = "";
+    switch (statusCode) {
+        case 200:
+            return true;
+        case 400:
+            message =
+                "The server didn't like your search input. Try reformatting it.";
+            break;
+        case 500:
+            message = "Internal server error. Apologies!";
+            break;
+        default:
+            message = "Mysterious unknown error";
+    }
+    displayMessageDiv(messageHolder, message);
+    return false;
 }
 
 function handleHistory() {
