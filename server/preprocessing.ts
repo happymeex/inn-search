@@ -8,7 +8,7 @@ const PAUSE_TIME = 2;
 const TABLE_OF_CONTENTS = "https://wanderinginn.com/table-of-contents/";
 const URL_BASE = "https://wanderinginn.com";
 export const PARAGRAPH_DELIMITER = "\n\n";
-const IGNORE_URLS = ["/vol-1-archive", "/contacts/"];
+const IGNORE_URLS = ["/vol-1-archive", "/contacts/", "/2023/03/05/end-vol-1"];
 
 export const DATA_PATH = path.resolve(__dirname, "..", "..", "data");
 
