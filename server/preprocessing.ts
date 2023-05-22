@@ -311,9 +311,11 @@ function sanitizeText(text: string): string {
     // match "Previous Chapter" and "Next Chapter" buttons
     const nextPrevButton = /<a href=.*?>.*?Chapter.*?<\/a>/g;
     const images = /<img.*?>|<a href=.*?>.*?<img.*?<\/a>/g;
+    const links = /<a href=.*?>(.*?)<\/a>/gs;
     return text
         .replaceAll(nextPrevButton, "")
         .replaceAll(images, "")
+        .replaceAll(links, "$1")
         .replaceAll(`\u2018`, "'")
         .replaceAll(`\u2019`, "'")
         .replaceAll(`\u201c`, `"`)
