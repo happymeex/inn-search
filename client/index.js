@@ -56,7 +56,7 @@ modalBackground.addEventListener("click", (e) => {
 async function handleSearch(input) {
     clearSearchResults();
     displayMessageDiv(messageHolder, `<div id="loader"></div>`); // loading...
-    query = parseSearch(input);
+    query = parseSearch(input).sort((w1, w2) => w2.length - w1.length);
     const qParams = formatParams({ query });
     const res = await fetch(`/search?${qParams}`);
     if (!isOK(res.status)) return;

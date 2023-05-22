@@ -30,17 +30,22 @@ function formatParams(params) {
  * and returns the result
  *
  * @param {string} text
- * @param {string[]} words
+ * @param {string[]} words list sorted in order of decreasing length
  * @returns {string}
  */
 function boldKeywords(text, words) {
     let ret = text;
     words.forEach((word) => {
         const regex = new RegExp(cleanWord(word), "gi");
-        ret = ret.replaceAll(
-            regex,
-            (word) => `<b class="highlighted-keyword">${word}</b>`
-        );
+        ret = ret.replaceAll(regex, (word, index) => {
+            // try to avoid boldfacing substrings of HTML formatting
+            const neighborhood = ret.slice(index - 8, index + 12);
+            const peek = ret.slice(index - 3, index + 3);
+            if (peek.indexOf("<") >= 0 && 3 < peek.indexOf(">")) return word;
+            if (neighborhood.includes(`="hkw"`) || neighborhood.includes("b>"))
+                return word;
+            else return `<b class="hkw">${word}</b>`;
+        });
     });
     return ret;
 }

@@ -160,7 +160,7 @@ hr {
     color: var(--gold);
 }
 
-.highlighted-keyword {
+.hkw {
     font-weight: 900;
     color: white;
 }
