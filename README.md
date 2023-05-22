@@ -43,3 +43,5 @@ To fetch and update the data when a new chapter is released, make a GET request 
 ```
 https://localhost:3000/admin?password=[password]&command=update
 ```
+
+See `server/server.ts` for the complete list of commands and specifications.

@@ -23,6 +23,7 @@ type SearchRequest = {
 type AdminRequest = {
     password: string;
     command: string;
+    index?: string;
 };
 
 async function searchHandler(
@@ -53,17 +54,29 @@ async function handleAdminTasks(
             switch (req.query.command) {
                 case "reset":
                     await chapterData.reset();
-                    break;
+                    return;
                 case "update":
                     await chapterData.update();
+                    break;
+                case "patch":
+                    const indexString = req.query.index;
+                    if (indexString === undefined) {
+                        res.status(StatusCodes.BAD_REQUEST).send(
+                            "missing chapter index"
+                        );
+                        return;
+                    }
+                    const index = parseInt(indexString);
+                    await chapterData.writeChapter(index);
                     break;
                 default:
                     res.status(StatusCodes.BAD_REQUEST).send();
                     return;
             }
-            res.status(StatusCodes.OK).send();
+            res.status(StatusCodes.OK).send(`${req.query.command} OK`);
         } else res.status(StatusCodes.UNAUTHORIZED).send();
     } catch (err) {
+        console.log(String(err));
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(String(err));
     }
 }

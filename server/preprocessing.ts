@@ -168,7 +168,7 @@ export class Inventory {
      * @param i index of chapter to be written
      * @throws Error if `i` is not a valid index in `this.nameURL` or if fetch/write fails
      */
-    private async writeChapter(i: number): Promise<void> {
+    public async writeChapter(i: number): Promise<void> {
         const nameURL = (await this.nameURL).at(i);
         if (nameURL === undefined)
             throw new Error(`Missing chapter at index ${i}`);
@@ -269,7 +269,9 @@ async function writeToFile(
     chapterURLs: URL[],
     chapterNames: ChapterName[]
 ): Promise<void[]> {
-    console.log("writing batch to file starting at chapter", startIndex);
+    console.log(
+        `Writing ${chapterTexts.length} file(s) starting at chapter ${startIndex}`
+    );
     return (
         Promise.all(chapterTexts)
             // format chapter text by appending chapter name to the top
