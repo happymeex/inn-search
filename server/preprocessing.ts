@@ -11,137 +11,248 @@ export const PARAGRAPH_DELIMITER = "\n\n";
 const IGNORE_URLS = ["/vol-1-archive", "/contacts/", "/2023/03/05/end-vol-1"];
 
 export const DATA_PATH = path.resolve(__dirname, "..", "..", "data");
+export let NUM_CHAPTERS = fs.readdirSync(DATA_PATH).length - 1; // exclude .gitkeep
 
-async function loadFiles(
-    forceReload = false
-): Promise<Array<[ChapterName, URL, Text]>> {
-    console.log("loading files...");
-    const promises: Promise<Buffer>[] = [];
-    let numChapters = fs.readdirSync(DATA_PATH).length - 1; // exclude .gitkeep
-    console.log("found", numChapters, "chapters");
-    if (numChapters === 0 || forceReload) {
-        console.log("fetching and writing all chapters to filesys");
-        await writeAll(BATCH_SIZE, PAUSE_TIME);
+/**
+ * Class to manage fetching, reading, and writing raw chapter data
+ */
+export class Inventory {
+    private nameURL: Promise<Array<[ChapterName, URL]>>;
+    private _numChapters = 0;
+
+    public constructor() {
+        this._numChapters = fs.readdirSync(DATA_PATH).length - 1; // exclude .gitkeep
+        if (this._numChapters === 0) {
+            this.reset();
+        } else {
+            const nameURLPairs: [ChapterName, URL][] = [];
+            for (let i = 0; i < this._numChapters; i++) {
+                const chapter = fs.readFileSync(
+                    path.resolve(DATA_PATH, `${i}.txt`),
+                    {
+                        encoding: "utf-8",
+                    }
+                );
+                const [name, url, text] = splitFirstLines(chapter);
+                nameURLPairs.push([name, url]);
+            }
+            this.nameURL = (async () => nameURLPairs)();
+        }
     }
-    numChapters = fs.readdirSync(DATA_PATH).length - 1;
-    for (let i = 0; i < numChapters; i++) {
-        promises.push(
-            fs.promises.readFile(path.resolve(DATA_PATH, `${i}.txt`))
-        );
+
+    public get numChapters() {
+        return this._numChapters;
     }
-    return Promise.all(promises).then((res) =>
-        res.map((buffer) => buffer.toString()).map(splitFirstLines)
-    );
-}
 
-/**
- * Splits a string into three at its first two newline characters
- *
- * @param str string to split
- */
-function splitFirstLines(str: string): [ChapterName, URL, Text] {
-    const firstLineBreak = str.indexOf("\n");
-    const rest = str.slice(firstLineBreak + 1);
-    const secondLineBreak = rest.indexOf("\n");
-    return [
-        str.slice(0, firstLineBreak),
-        rest.slice(0, secondLineBreak),
-        rest.slice(secondLineBreak + 1),
-    ];
-}
+    /**
+     * Initiates refetch of table of contents
+     */
+    private async resetChapterList(): Promise<void> {
+        this.nameURL = chapterToURL();
+        await this.nameURL.then((res) => (this._numChapters = res.length));
+    }
 
-/**
- * Promise to an array whose elements take the form [chapterName, url, text],
- * in the correct chapter order.
- */
-export let ALL_TEXT_PROMISE: Promise<Array<[ChapterName, URL, Text]>> =
-    loadFiles();
+    /**
+     * Refetches the table of contents and all chapters and then writes the chapters to the filesystem.
+     * The ith chapter is written to `DATA_PATH/i.txt`, and chapters are fetched in batches of
+     * `BATCH_SIZE` because fetching all chapters concurrently runs into 429 error.
+     * Logs progress to the console.
+     *
+     * @throws Error if any fetch fails
+     */
+    public async reset(): Promise<void> {
+        this.resetChapterList();
+        return this.writeAll(BATCH_SIZE, PAUSE_TIME);
+    }
 
-/**
- * Rereads the text from files.
- */
-export function resetText(forceReload = false): void {
-    ALL_TEXT_PROMISE = loadFiles(forceReload);
-}
+    /**
+     * Refetches the table of contents, checks for new chapters, and fetches/writes them to the filesystem.
+     *
+     * @throws Error if an existing chapter has changed since the last call to reset or update,
+     *      or if a chapter fetch fails
+     */
+    public async update(): Promise<void> {
+        const oldNameURL = await this.nameURL;
+        this.resetChapterList();
+        const nameURL = await this.nameURL;
+        for (const [i, [name, url]] of oldNameURL.entries()) {
+            const newEntry = nameURL.at(i);
+            if (newEntry === undefined) {
+                throw new Error(`Chapter ${i} no longer exists`);
+            }
+            const [newName, newUrl] = newEntry;
+            if (newName !== name || newUrl !== url) {
+                throw new Error(
+                    `Please reset before updating: an existing chapter has changed\n
+                    [${name}, ${url}] => [${newName}, ${newUrl}]`
+                );
+            }
+        }
+        for (let i = oldNameURL.length; i < nameURL.length; i++) {
+            this.writeChapter(i);
+        }
+    }
 
-/**
- * Fetches and writes all chapters to files of the form `DATA_PATH/i.txt`.
- * Executes in batches, since fetching all chapters concurrently runs into 429 error
- * too many requests.
- *
- * @param rateLimit maximum number of chapters to handle at a time, default 1000
- * @param pauseTime minutes to pause between batches of requests, default 0
- */
-export async function writeAll(
-    rateLimit = 1000,
-    pauseTime = 0,
-    start = 0
-): Promise<void> {
-    const urls = await chapterToURL();
-    const chapterNames: ChapterName[] = [];
-    const chapterURLs: URL[] = [];
-    const promises: Promise<Text>[] = [];
+    /**
+     * Reads a range of chapters from filesystem. For each missing chapter, attempts
+     * to fetch and write it to disk before reading again.
+     *
+     * @param start nonnegative integer chapter number to start loading
+     * @param numChapters upper bound on number of chapters to load
+     * @returns promise to array of raw chapter data: name, relative url, and text
+     */
+    public async loadChapters(
+        start: number,
+        numChapters: number
+    ): Promise<Array<[ChapterName, URL, Text]>> {
+        const promises: Promise<string>[] = [];
+        const end = Math.min(start + numChapters, NUM_CHAPTERS);
+        for (let i = start; i < end; i++) {
+            const chapterPath = path.resolve(DATA_PATH, `${i}.txt`);
+            if (!fs.existsSync(chapterPath)) {
+                await this.writeChapter(i);
+            }
+            try {
+                promises.push(
+                    fs.promises.readFile(chapterPath, { encoding: "utf8" })
+                );
+            } catch (err) {
+                console.log(`Error loading chapter ${i}, ${String(err)}`);
+                promises.push((async () => "")());
+            }
+        }
+        return Promise.all(promises).then((res) => res.map(splitFirstLines));
+    }
 
-    for (const [i, [chapterName, url]] of urls.entries()) {
-        if (i < start) continue;
-        console.log(`starting chapter ${i}: ${chapterName}`);
-        chapterNames.push(chapterName);
-        chapterURLs.push(url);
-        promises.push(fetchChapter(url));
-        if ((i + 1) % rateLimit === 0 || i + 1 === urls.length) {
-            await writeToFile(
-                rateLimit * Math.floor(i / rateLimit),
-                promises,
-                chapterURLs,
-                chapterNames
+    /**
+     * Fetches and writes all chapters to files of the form `DATA_PATH/i.txt`.
+     * See the spec for `this.reset`.
+     *
+     * @param rateLimit maximum number of chapters to handle at a time, default 1000
+     * @param pauseTime minutes to pause between batches of requests, default 0
+     * @throws Error if a chapter fetch fails
+     */
+    private async writeAll(
+        rateLimit: number,
+        pauseTime: number
+    ): Promise<void> {
+        const nameURL = await this.nameURL;
+        const chapterNames: ChapterName[] = [];
+        const chapterURLs: URL[] = [];
+        const promises: Promise<Text>[] = [];
+
+        for (const [i, [chapterName, url]] of nameURL.entries()) {
+            chapterNames.push(chapterName);
+            chapterURLs.push(url);
+            promises.push(fetchChapter(url));
+            if ((i + 1) % rateLimit === 0 || i + 1 === nameURL.length) {
+                await writeToFile(
+                    rateLimit * Math.floor(i / rateLimit),
+                    promises,
+                    chapterURLs,
+                    chapterNames
+                );
+                console.log("finished batch, waiting now...");
+                await wait(pauseTime * 60 * 1000);
+                chapterNames.length = 0;
+                chapterURLs.length = 0;
+                promises.length = 0;
+            }
+        }
+        console.log("finished fetching and writing all chapters");
+    }
+
+    /**
+     * Fetches and writes the `i`th chapter of `this.nameURL`
+     *
+     * @param i index of chapter to be written
+     * @throws Error if `i` is not a valid index in `this.nameURL` or if fetch/write fails
+     */
+    private async writeChapter(i: number): Promise<void> {
+        const nameURL = (await this.nameURL).at(i);
+        if (nameURL === undefined)
+            throw new Error(`Missing chapter at index ${i}`);
+        const [chapterName, url] = nameURL;
+        try {
+            const text = fetchChapter(url);
+            await writeToFile(i, [text], [url], [chapterName]);
+        } catch {
+            throw new Error(
+                `Failed to fetch and write chapter ${i}: ${chapterName} at ${url}`
             );
-            console.log("finished batch, waiting now...");
-            await wait(pauseTime * 60 * 1000);
-            chapterNames.length = 0;
-            chapterURLs.length = 0;
-            promises.length = 0;
         }
     }
-    console.log("finished fetching and writing all chapters");
 }
 
 /**
- * Updates file storage by (i) fetching and writing existing chapters (files)
- * that are missing text, and (ii) fetching and writing new chapters.
- * After doing so, resets the in-memory text storage
+ * Fetches the table of contents and identifies chapter names with their URLs
+ *
+ * @returns a promise to a list of pairs of the form [chapterName, URL]
+ * @throws Error if fetch fails
  */
-export async function writeUpdate(): Promise<void> {
-    const promise = chapterToURL();
-    const currText = await ALL_TEXT_PROMISE;
-    const urls = new Map(await promise);
-    for (const [i, [chapterName, url, text]] of currText.entries()) {
-        // patch missing chapters
-        if (text.length === 0) {
-            console.log("patching missing chapter:", chapterName);
-            const url = urls.get(chapterName);
-            if (url === undefined) console.log("unknown url");
-            else
-                await writeToFile(i, [fetchChapter(url)], [url], [chapterName]);
-        }
-    }
-    // write new chapter
-    const chapterNames = new Set(
-        currText.map(([chapterName, url, text]) => chapterName)
+async function chapterToURL(): Promise<Array<[ChapterName, URL]>> {
+    const regex = /<a[\s]+href="(\/[-\w\/]+)">([\w\-\u2013\(\). ]+)<\/a>/g;
+    const res = await fetch(TABLE_OF_CONTENTS);
+    const rawHTML = await res.text();
+    const matches = [...rawHTML.matchAll(regex)];
+    const ret: Array<[string, string]> = [];
+    matches.forEach((match) => {
+        assert(match[1] && match[2]);
+        if (IGNORE_URLS.includes(match[1])) return;
+        ret.push([match[2], match[1]]);
+    });
+    return ret;
+}
+
+/**
+ * Fetches the text content of the chapter at the given url. Logs error to console
+ * if one occurs.
+ *
+ * @param url a relative url to a chapter
+ * @returns a promise for the text of the corresponding chapter as a single string,
+ *      paragraphs separated by double newlines
+ */
+async function fetchChapter(url: URL): Promise<Text> {
+    const regex = new RegExp(
+        /<div[\s]+class[\s]*=[\s]*"entry-content">(.*?)<\/div>/,
+        "s"
     );
-    let i = 0;
-    for (const [newChapterName, url] of urls.entries()) {
-        if (!chapterNames.has(newChapterName)) {
-            console.log("writing new chapter:", newChapterName);
-            await writeToFile(
-                currText.length + i,
-                [fetchChapter(url)],
-                [url],
-                [newChapterName]
-            );
-            i++;
+    try {
+        const res = await fetch(URL_BASE + url);
+        const rawHTML = await res.text();
+        const match = rawHTML.match(regex);
+        if (!match || !match[1]) {
+            if (rawHTML.includes("429 Too Many Requests")) {
+                throw new Error("429 Too Many Requests");
+            } else
+                throw new Error(
+                    `Unexpected chapter html: ${rawHTML.slice(0, 300)}...`
+                );
         }
+        return extractText(match[1]);
+    } catch (err) {
+        console.log("Errored on:", url, String(err));
+        return "";
     }
-    resetText();
+}
+
+/**
+ * Given a string represeting raw HTML, returns all text content of the HTML occurring between
+ * `<p>` tags, joined into a single string by `PARAGRAPH_DELIMITER`
+ *
+ * @param rawHTML raw HTML
+ * @returns the text of the chapter as a single string with paragraphs separated by `PARAGRAPH_DELIMITER`
+ */
+function extractText(rawHTML: string): Text {
+    const regex = new RegExp(/<p>(.*?)<\/p>/, "sg");
+    const m = [...rawHTML.matchAll(regex)];
+    const rawText = m
+        .map((match) => {
+            assert(match[1]);
+            return match[1];
+        })
+        .join(PARAGRAPH_DELIMITER);
+    return sanitizeText(rawText);
 }
 
 /**
@@ -167,7 +278,7 @@ async function writeToFile(
                     const name = chapterNames[i];
                     const url = chapterURLs[i];
                     assert(name && url);
-                    return name + "\n" + url + "\n" + text;
+                    return formatForFile(name, url, text);
                 });
             })
             .then((res) =>
@@ -187,66 +298,13 @@ async function writeToFile(
 }
 
 /**
- * @returns a promise to a list of pairs of the form [chapterName, URL]
+ * @param chapterName
+ * @param url
+ * @param text
+ * @returns string to be saved into a file
  */
-async function chapterToURL(): Promise<Array<[ChapterName, URL]>> {
-    const regex = /<a[\s]+href="(\/[-\w\/]+)">([\w\-\u2013\(\). ]+)<\/a>/g;
-    const res = await fetch(TABLE_OF_CONTENTS);
-    const rawHTML = await res.text();
-    const matches = [...rawHTML.matchAll(regex)];
-    const ret: Array<[string, string]> = [];
-    matches.forEach((match) => {
-        assert(match[1] && match[2]);
-        if (IGNORE_URLS.includes(match[1])) return;
-        ret.push([match[2], match[1]]);
-    });
-    return ret;
-}
-
-/**
- *
- * @param url a relative url to a chapter
- * @returns a promise for the text of the corresponding chapter as a single string,
- *      paragraphs separated by double newlines
- */
-async function fetchChapter(url: URL): Promise<Text> {
-    const regex = new RegExp(
-        /<div[\s]+class[\s]*=[\s]*"entry-content">(.*?)<\/div>/,
-        "s"
-    );
-    try {
-        const res = await fetch(URL_BASE + url);
-        const rawHTML = await res.text();
-        const match = rawHTML.match(regex);
-        if (!match || !match[1]) {
-            if (rawHTML.includes("429 Too Many Requests")) {
-                throw new Error("429 Too Many Requests");
-            } else
-                throw new Error(
-                    `Unexpected chapter html: ${rawHTML.slice(0, 300)}...`
-                );
-        }
-        return extractText(match[1]);
-    } catch (err) {
-        console.log("errored on:", url, String(err));
-        return "";
-    }
-}
-
-/**
- * @param rawHTML raw HTML between the <div class="entry-content"> of a chapter's source HTML
- * @returns the text of the chapter as a single string with paragraps separated by double newlines
- */
-function extractText(rawHTML: string): Text {
-    const regex = new RegExp(/<p>(.*?)<\/p>/, "sg");
-    const m = [...rawHTML.matchAll(regex)];
-    const rawText = m
-        .map((match) => {
-            assert(match[1]);
-            return match[1];
-        })
-        .join(PARAGRAPH_DELIMITER);
-    return sanitizeText(rawText);
+function formatForFile(chapterName: ChapterName, url: URL, text: Text) {
+    return chapterName + "\n" + url + "\n" + text;
 }
 
 function sanitizeText(text: string): string {
@@ -259,6 +317,22 @@ function sanitizeText(text: string): string {
         .replaceAll(`\u201c`, `"`)
         .replaceAll(`\u201d`, `"`)
         .replaceAll(`\u2026`, "...");
+}
+
+/**
+ * Splits a string into three at its first two newline characters
+ *
+ * @param str string to split
+ */
+function splitFirstLines(str: string): [ChapterName, URL, Text] {
+    const firstLineBreak = str.indexOf("\n");
+    const rest = str.slice(firstLineBreak + 1);
+    const secondLineBreak = rest.indexOf("\n");
+    return [
+        str.slice(0, firstLineBreak),
+        rest.slice(0, secondLineBreak),
+        rest.slice(secondLineBreak + 1),
+    ];
 }
 
 function wait(msec: number): Promise<void> {

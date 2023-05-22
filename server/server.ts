@@ -3,35 +3,15 @@ import path from "path";
 import { search } from "./search";
 import { StatusCodes } from "http-status-codes";
 import { Request, Response } from "express";
-import { writeUpdate, resetText, ALL_TEXT_PROMISE } from "./preprocessing";
+import { chapterData } from "./search";
 import * as dotenv from "dotenv";
 
 dotenv.config();
 const PORT = process.env.PORT ?? 3000;
-let resettingText = false; // true whenever server is fetching/writing data to disk
 
 const app = express();
 
-/**
- * If server is currently in the process of resetting text, sends an HTTP
- * response telling client to hang tight and returns true. Else returns false.
- *
- * @param res response object to send to if text is currently being reset
- * @returns boolean indicating whether server is busy
- */
-const isResetting = (res: Response) => {
-    if (resettingText) {
-        res.status(StatusCodes.IM_A_TEAPOT)
-            .type("html")
-            .send(
-                "<p>Hang tight: server currently fetching and updating text data</p>"
-            );
-    }
-    return resettingText;
-};
-
 app.get("/", (req, res) => {
-    if (isResetting(res)) return;
     res.status(StatusCodes.OK).sendFile(
         path.resolve(__dirname, "..", "index.html")
     );
@@ -49,7 +29,6 @@ async function searchHandler(
     req: Request<{}, {}, {}, SearchRequest>,
     res: Response
 ) {
-    if (isResetting(res)) return;
     const query = req.query.query;
     try {
         const allData = await search(query);
@@ -68,19 +47,15 @@ async function handleAdminTasks(
     req: Request<{}, {}, {}, AdminRequest>,
     res: Response
 ) {
-    if (isResetting(res)) return;
     try {
         if (req.query.password === process.env.ADMIN_KEY) {
-            console.log("admin access granted");
+            console.log(`admin issued ${req.query.command} command, ${Date()}`);
             switch (req.query.command) {
                 case "reset":
-                    resettingText = true;
-                    resetText(true);
-                    ALL_TEXT_PROMISE.then(() => (resettingText = false));
+                    await chapterData.reset();
                     break;
                 case "update":
-                    resettingText = true;
-                    writeUpdate().then(() => (resettingText = false));
+                    await chapterData.update();
                     break;
                 default:
                     res.status(StatusCodes.BAD_REQUEST).send();
@@ -110,9 +85,14 @@ app.get("/search", searchHandler);
  * API endpoint: request must have `password` and `command` fields.
  * If the password does not match the environment variable `ADMIN_KEY`, then
  * responds with UNAUTHORIZED status code. Otherwise, switch-cases on `command`:
- *      - If `"reset"`, then initiates refetching and rewriting text data to disk
- *      - If `"update"`, then intitates fetching and writing new text chapters to disk
- * If `command` is none of these, responds with a BAD_REQUEST status code.
+ *      - If `reset`, then initiates refetching and rewriting text data to disk
+ *      - If `update`, then intitates fetching and writing new text chapters to disk
+ *        and as well as checking whether all existing chapter names and urls have
+ *        counterparts in the newly fetched table of contents. If a discrepancy
+ *        is observed in the existing chapters, response with INTERNAL_SERVER_ERROR status
+ *        and sends the old and new name and url of the changed chapter.
+ * If a fetch error occurs at any point, responds with INTERNAL_SERVER_ERROR status code.
+ * If `command` is neither `update` nor `reset`, responds with a BAD_REQUEST status code.
  */
 app.get("/admin", handleAdminTasks);
 

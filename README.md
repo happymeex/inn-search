@@ -25,11 +25,8 @@ Run `npm start` to compile and start the server.
 If the server has not already fetched the webnovel text and written it to disk, it will do so.
 This should take a few hours; the console will notify you when it is finished.
 (It fetches in batches of 8 every 2 minutes to avoid a 429 response from
-the TWI web server. You can adjust these parameters by playing with the constants in `server/preprocessing.ts`.
-Interestingly, my local build seemed to be able to fetch larger batches at a time than
-the deployment build could.)
-Subsequent server starts bypass the webscraping step and instead load the data into memory by reading
-from disk.
+the TWI web server. You can adjust these parameters by playing with the constants in `server/preprocessing.ts`.)
+Subsequent server starts bypass the webscraping step.
 
 To see the frontend, visit `https://localhost:3000/` in your browser.
 If you make changes to the client, run `npm run copy` before visiting the site again.

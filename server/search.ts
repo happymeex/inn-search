@@ -1,9 +1,12 @@
-import { SearchParams, scoreText } from "./score";
-import { ALL_TEXT_PROMISE } from "./preprocessing";
+import { scoreText } from "./score";
+import { Inventory } from "./preprocessing";
 import { ChapterName, URL, ChapterSearchData } from "./types";
 
 /** Upper bound on allowable query length (separating commas included) */
 const MAX_LENGTH = 200;
+const SEARCH_BATCH_SIZE = 150;
+
+export const chapterData = new Inventory();
 
 /**
  * Search all chapters currently stored in the file system.
@@ -26,33 +29,42 @@ export async function search(
     if (query.length > MAX_LENGTH) {
         return undefined;
     }
-    const numChapters = (await ALL_TEXT_PROMISE).length;
-    const ret = parseChapters(0, numChapters, filteredWords);
-    return ret;
+
+    const ret: ChapterSearchData[][] = [];
+    const numChapters = chapterData.numChapters;
+    const numBatches = Math.ceil(numChapters / SEARCH_BATCH_SIZE);
+    for (let i = 0; i < numBatches; i++) {
+        const batchResults = await searchChapters(
+            SEARCH_BATCH_SIZE * i,
+            SEARCH_BATCH_SIZE,
+            filteredWords
+        );
+        ret.push(batchResults);
+    }
+    return ret.flat();
 }
 
 /**
- * Search a batch of chapters.
+ * Searches a batch of chapters starting at chapter `start` until either `numChapters`
+ * chapters have been searched or until the last chapter has been searched
  *
  * @param start index of chapter to begin search
- * @param numChapters number of chapters to search
+ * @param numChapters upper bound on number of chapters to search
  * @param searchWords list of search words
- * @returns a list of search results for the `numChapters` chapters starting at chapter `start`
+ * @returns a list of search results for the `numChapters` chapters starting at chapter `start`,
+ *      ignoring chapter indices beyond the last one.
  */
-export async function parseChapters(
+async function searchChapters(
     start: number,
     numChapters: number,
     searchWords: string[]
 ): Promise<Array<ChapterSearchData>> {
-    const allText = await ALL_TEXT_PROMISE;
+    const chapters = await chapterData.loadChapters(start, numChapters);
     const data: Array<ChapterSearchData> = [];
-    for (let i = 0; i < numChapters; i++) {
-        const chapter = allText[start + i];
-        if (chapter) {
-            const [name, url, text] = chapter;
-            const { score, excerpts } = scoreText(text, searchWords);
-            data.push({ name, url, score, excerpts });
-        }
+    for (const chapter of chapters) {
+        const [name, url, text] = chapter;
+        const { score, excerpts } = scoreText(text, searchWords);
+        data.push({ name, url, score, excerpts });
     }
     return data;
 }
