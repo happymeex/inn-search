@@ -309,9 +309,11 @@ function formatForFile(chapterName: ChapterName, url: URL, text: Text) {
 
 function sanitizeText(text: string): string {
     // match "Previous Chapter" and "Next Chapter" buttons
-    const regex = /<a href=.*?>.*?Chapter.*?<\/a>/g;
+    const nextPrevButton = /<a href=.*?>.*?Chapter.*?<\/a>/g;
+    const images = /<img.*?>|<a href=.*?>.*?<img.*?<\/a>/g;
     return text
-        .replaceAll(regex, "")
+        .replaceAll(nextPrevButton, "")
+        .replaceAll(images, "")
         .replaceAll(`\u2018`, "'")
         .replaceAll(`\u2019`, "'")
         .replaceAll(`\u201c`, `"`)
