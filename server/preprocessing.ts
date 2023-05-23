@@ -205,35 +205,56 @@ async function chapterToURL(): Promise<Array<[ChapterName, URL]>> {
 }
 
 /**
- * Fetches the text content of the chapter at the given url. Logs error to console
- * if one occurs.
+ * Fetches the text content of the chapter at the given url. If an error occurs,
+ * logs the error to console and returns the empty string.
  *
  * @param url a relative url to a chapter
  * @returns a promise for the text of the corresponding chapter as a single string,
  *      paragraphs separated by double newlines
  */
 async function fetchChapter(url: URL): Promise<Text> {
-    const regex = new RegExp(
-        /<div[\s]+class[\s]*=[\s]*"entry-content">(.*?)<\/div>/,
-        "s"
-    );
     try {
         const res = await fetch(URL_BASE + url);
         const rawHTML = await res.text();
-        const match = rawHTML.match(regex);
-        if (!match || !match[1]) {
-            if (rawHTML.includes("429 Too Many Requests")) {
-                throw new Error("429 Too Many Requests");
-            } else
-                throw new Error(
-                    `Unexpected chapter html: ${rawHTML.slice(0, 300)}...`
-                );
+        if (rawHTML.includes("429 Too Many Requests")) {
+            throw new Error("429 Too Many Requests");
         }
-        return extractText(match[1]);
+        const contentDiv = extractContentDiv(rawHTML);
+        return extractText(contentDiv);
     } catch (err) {
         console.log("Errored on:", url, String(err));
         return "";
     }
+}
+
+/**
+ * Given raw HTML text, extracts the contents of the first div matching
+ * `<div class="entry-content">`
+ *
+ * @param rawHTML string representing raw HTML
+ * @returns substring of `rawHTML` matching `<div class="entry-content">` up to
+ *      but not including the closing div tag of this div, or the rest of `rawHTML`
+ *      if the div is not properly closed
+ * @throws Error if `rawHTML` does not contain `<div class="entry-content">`
+ */
+function extractContentDiv(rawHTML: string): string {
+    const reg = /<div[\s]+class[\s]*=[\s]*"entry-content">/;
+    const m = rawHTML.match(reg);
+    if (m === null)
+        throw new Error(`Unexpected chapter HTML ${rawHTML.slice(0, 300)}...`);
+    const start = m.index;
+    assert(start);
+    let index = start;
+    let numOpenDivs = 1;
+    while (numOpenDivs > 0) {
+        index++;
+        if (index >= rawHTML.length) {
+            break;
+        }
+        if (rawHTML.slice(index, index + 4) === "<div") numOpenDivs++;
+        else if (rawHTML.slice(index, index + 5) === "</div") numOpenDivs--;
+    }
+    return rawHTML.slice(start, index);
 }
 
 /**
@@ -318,6 +339,7 @@ function sanitizeText(text: string): string {
         .replaceAll(nextPrevButton, "")
         .replaceAll(images, "")
         .replaceAll(links, "$1")
+        .replaceAll("&nbsp;", " ")
         .replaceAll(`\u2018`, "'")
         .replaceAll(`\u2019`, "'")
         .replaceAll(`\u201c`, `"`)

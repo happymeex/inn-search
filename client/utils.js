@@ -40,8 +40,10 @@ function boldKeywords(text, words) {
         ret = ret.replaceAll(regex, (word, index) => {
             // try to avoid boldfacing substrings of HTML formatting
             const neighborhood = ret.slice(index - 8, index + 12);
-            const peek = ret.slice(index - 3, index + 3);
-            if (peek.indexOf("<") >= 0 && 3 < peek.indexOf(">")) return word;
+            const left = ret.slice(Math.max(0, index - 4), index);
+            const right = ret.slice(index + 1, index + 4);
+            if (left.includes("<") && right.includes(">")) return word;
+            //if (left.includes("&") && right.includes(";")) return word; // handle &nbsp;
             if (neighborhood.includes(`="hkw"`) || neighborhood.includes("b>"))
                 return word;
             else return `<b class="hkw">${word}</b>`;
