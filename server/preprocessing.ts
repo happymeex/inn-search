@@ -9,9 +9,7 @@ const TABLE_OF_CONTENTS = "https://wanderinginn.com/table-of-contents/";
 const URL_BASE = "https://wanderinginn.com";
 export const PARAGRAPH_DELIMITER = "\n\n";
 const IGNORE_URLS = ["/vol-1-archive", "/contacts/", "/2023/03/05/end-vol-1"];
-
 export const DATA_PATH = path.resolve(__dirname, "..", "..", "data");
-export let NUM_CHAPTERS = fs.readdirSync(DATA_PATH).length - 1; // exclude .gitkeep
 
 /**
  * Class to manage fetching, reading, and writing raw chapter data
@@ -47,9 +45,8 @@ export class Inventory {
     /**
      * Initiates refetch of table of contents
      */
-    private async resetChapterList(): Promise<void> {
+    private resetChapterList(): void {
         this.nameURL = chapterToURL();
-        await this.nameURL.then((res) => (this._numChapters = res.length));
     }
 
     /**
@@ -106,7 +103,7 @@ export class Inventory {
         numChapters: number
     ): Promise<Array<[ChapterName, URL, Text]>> {
         const promises: Promise<string>[] = [];
-        const end = Math.min(start + numChapters, NUM_CHAPTERS);
+        const end = Math.min(start + numChapters, this._numChapters);
         for (let i = start; i < end; i++) {
             const chapterPath = path.resolve(DATA_PATH, `${i}.txt`);
             if (!fs.existsSync(chapterPath)) {
@@ -153,6 +150,7 @@ export class Inventory {
                     chapterNames
                 );
                 console.log("finished batch, waiting now...");
+                this.updateNumChapters();
                 await wait(pauseTime * 60 * 1000);
                 chapterNames.length = 0;
                 chapterURLs.length = 0;
@@ -163,7 +161,7 @@ export class Inventory {
     }
 
     /**
-     * Fetches and writes the `i`th chapter of `this.nameURL`
+     * Fetches and writes the `i`th chapter of `this.nameURL`.
      *
      * @param i index of chapter to be written
      * @throws Error if `i` is not a valid index in `this.nameURL` or if fetch/write fails
@@ -176,11 +174,22 @@ export class Inventory {
         try {
             const text = fetchChapter(url);
             await writeToFile(i, [text], [url], [chapterName]);
+            this.updateNumChapters();
         } catch {
             throw new Error(
                 `Failed to fetch and write chapter ${i}: ${chapterName} at ${url}`
             );
         }
+    }
+
+    /**
+     * Update `this._numChapters` to reflect new chapters written to disk, if any
+     */
+    private updateNumChapters() {
+        this._numChapters = Math.max(
+            this._numChapters,
+            fs.readdirSync(DATA_PATH).length - 1
+        );
     }
 }
 
