@@ -1,4 +1,10 @@
 /**
+ * Cap the number of occurrences of keywords in the excerpts returned from a single chapter,
+ * to avoid memory overflow
+ */
+const MAX_OCCURRENCES = 250;
+
+/**
  * Utility class for extracting keyword-containing excerpts from a chapter's text given a list of
  * indices corresponding to keyword occurrences.
  */
@@ -72,7 +78,11 @@ export class ExcerptExtractor {
         let progress = this.curr;
         while (true) {
             const nextIndex = this.indices.at(progress + 1);
-            if (nextIndex === undefined || nextIndex > index + this.distance) {
+            if (
+                nextIndex === undefined ||
+                nextIndex > index + this.distance ||
+                progress > MAX_OCCURRENCES
+            ) {
                 break;
             }
             progress++;
@@ -80,6 +90,7 @@ export class ExcerptExtractor {
         const rightIndex = this.indices.at(progress)!;
         const { paragraphs, rightMost } = this.getParagraphs(index, rightIndex);
         const excerpt = paragraphs.join("");
+        // account for extra occurrences beyond `rightIndex` in the last paragraph
         this.curr = progress + 1;
         let idx = this.indices.at(this.curr);
         while (idx !== undefined && idx <= rightMost) {
@@ -99,7 +110,10 @@ export class ExcerptExtractor {
      */
     public getExcerpts(): string[] {
         if (this.excerpts.length === 0) {
-            while (this.curr < this.indices.length) {
+            while (
+                this.curr < this.indices.length &&
+                this.curr < MAX_OCCURRENCES
+            ) {
                 this.consumeExcerpt();
             }
         }
