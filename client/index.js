@@ -6,7 +6,6 @@ import {
     boldKeywords,
     handleEasterEgg,
 } from "./utils.js";
-const BASE_URL = "https://wanderinginn.com";
 const RESULTS_PER_PAGE = 10;
 const NUM_PREVIEWS = 3; // number of excerpts shown per search result
 const NO_RESULTS_MESSAGE = "No results found. Check the incantation?";
@@ -148,7 +147,7 @@ function makeSearchResultDiv(chapter) {
         query
     );
     div.innerHTML = `
-        <a href="${BASE_URL}${chapter.url}" target="_blank" class="results-chapterName">${chapter.name}</a>
+        <a href="${chapter.url}" target="_blank" class="results-chapterName">${chapter.name}</a>
         ${contentString}<hr />
     `;
     if (chapter.excerpts.length > NUM_PREVIEWS) {

@@ -137,7 +137,7 @@ function minDifference(arr1: number[], arr2: number[]): number {
  * @param word string to clean
  * @returns string with special regex-breaking characters escaped with double backslashes
  */
-function cleanWord(word) {
+function cleanWord(word: string) {
     return word.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
 }
 

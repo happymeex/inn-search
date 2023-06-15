@@ -86,7 +86,7 @@ async function handleAdminTasks(
  * comma-separated list of search keywords. Server responds with an array
  * of objects of the form {name: string, url: string, score: number, excerpts: string[]},
  * one for each chapter with positive score (i.e. at least one occurrence of some
- * keyword in that chapter), sorted chronologically (earliest to latest)
+ * keyword in that chapter), sorted chronologically (earliest to latest). The URL is absolute.
  *
  * If the search query is too long (more than 200 characters including separating commas),
  * responds with status code BAD_REQUEST.

@@ -96,7 +96,7 @@ export class Inventory {
      *
      * @param start nonnegative integer chapter number to start loading
      * @param numChapters upper bound on number of chapters to load
-     * @returns promise to array of raw chapter data: name, relative url, and text
+     * @returns promise to array of raw chapter data: name, absolute url, and text
      */
     public async loadChapters(
         start: number,
@@ -200,10 +200,12 @@ export class Inventory {
  * @throws Error if fetch fails
  */
 async function chapterToURL(): Promise<Array<[ChapterName, URL]>> {
-    const regex = /<a[\s]+href="(\/[-\w\/]+)">([\w\-\u2013\(\). ]+)<\/a>/g;
+    const regex =
+        /<a[\s]+href="(https:\/\/wanderinginn.com\/[-\w\/]+)">([\w\-\u2013\(\). ]+)<\/a>/g;
     const res = await fetch(TABLE_OF_CONTENTS);
     const rawHTML = await res.text();
-    const matches = [...rawHTML.matchAll(regex)];
+    const pageContent = rawHTML.slice(rawHTML.indexOf(`<div id="content"`));
+    const matches = [...pageContent.matchAll(regex)];
     const ret: Array<[string, string]> = [];
     matches.forEach((match) => {
         assert(match[1] && match[2]);
@@ -217,13 +219,13 @@ async function chapterToURL(): Promise<Array<[ChapterName, URL]>> {
  * Fetches the text content of the chapter at the given url. If an error occurs,
  * logs the error to console and returns the empty string.
  *
- * @param url a relative url to a chapter
+ * @param url an absolute url to a chapter
  * @returns a promise for the text of the corresponding chapter as a single string,
  *      paragraphs separated by double newlines
  */
 async function fetchChapter(url: URL): Promise<Text> {
     try {
-        const res = await fetch(URL_BASE + url);
+        const res = await fetch(url);
         const rawHTML = await res.text();
         if (rawHTML.includes("429 Too Many Requests")) {
             throw new Error("429 Too Many Requests");
