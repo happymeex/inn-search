@@ -69,6 +69,8 @@ async function handleAdminTasks(
                     const index = parseInt(indexString);
                     await chapterData.writeChapter(index);
                     break;
+                case "ping":
+                    break;
                 default:
                     res.status(StatusCodes.BAD_REQUEST).send();
                     return;
@@ -104,6 +106,9 @@ app.get("/search", searchHandler);
  *        counterparts in the newly fetched table of contents. If a discrepancy
  *        is observed in the existing chapters, response with INTERNAL_SERVER_ERROR status
  *        and sends the old and new name and url of the changed chapter.
+ *      - if `patch`, then expects a query parameter `index` that should a be a nonnegative
+ *        integer. Fetches and writes the `index`th chapter.
+ *      - if `ping`, does nothing (apart from printing to the command to console).
  * If a fetch error occurs at any point, responds with INTERNAL_SERVER_ERROR status code.
  * If `command` is neither `update` nor `reset`, responds with a BAD_REQUEST status code.
  */
