@@ -201,7 +201,7 @@ export class Inventory {
  */
 async function chapterToURL(): Promise<Array<[ChapterName, URL]>> {
     const regex =
-        /<a[\s]+href="(https:\/\/wanderinginn.com\/[-\w\/]+)">([\w\-\u2013\(\). ]+)<\/a>/g;
+        /<a[\s]+href="(https:\/\/wanderinginn.com\/[-\w\/]+)">([\w\-\u2013\(\)\[\]. ]+)<\/a>/g;
     const res = await fetch(TABLE_OF_CONTENTS);
     const rawHTML = await res.text();
     const pageContent = rawHTML.slice(rawHTML.indexOf(`<div id="content"`));
